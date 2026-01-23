@@ -1,9 +1,13 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-    : require("../../../rexon-bank-exam-preparation-firebase-adminsdk-fbsvc-3c32168962.json");
+const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+if (!serviceAccountKey) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY is not defined in environment variables.");
+}
+
+const serviceAccount = JSON.parse(serviceAccountKey);
 
 if (!getApps().length) {
     initializeApp({
