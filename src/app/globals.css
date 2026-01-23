@@ -1,26 +1,161 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: 'Google Sans Local';
+  src: url('/google.ttf') format('truetype');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-radius: var(--radius);
+
+  /* M3 Surface Containers */
+  --color-surface: var(--background);
+  --color-surface-container-low: var(--card);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--secondary);
+  --color-surface-container-highest: var(--accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Material 3 Expressive - Light */
+  --base-hue: 262;
+  --base-sat: 83%;
+
+  /* Neutral Palette (Tinted with base hue) */
+  --neutral-hue: var(--base-hue);
+  --neutral-sat: 10%;
+
+  --background: hsl(var(--neutral-hue) 15% 99%);
+  /* Surface */
+  --foreground: hsl(var(--neutral-hue) 10% 10%);
+  /* On Surface */
+
+  --card: hsl(var(--neutral-hue) 20% 96%);
+  /* Surface Container Low */
+  --card-foreground: hsl(var(--neutral-hue) 10% 10%);
+
+  --surface-container: hsl(var(--neutral-hue) 20% 94%);
+  /* Surface Container */
+
+  --popover: hsl(var(--neutral-hue) 20% 96%);
+  --popover-foreground: hsl(var(--neutral-hue) 10% 10%);
+
+  --primary: hsl(var(--base-hue) var(--base-sat) 58%);
+  /* Primary */
+  --primary-foreground: hsl(0 0% 100%);
+  /* On Primary */
+
+  --secondary: hsl(var(--base-hue) 15% 90%);
+  /* Secondary Container */
+  --secondary-foreground: hsl(var(--base-hue) 10% 10%);
+  /* On Secondary Container */
+
+  --muted: hsl(var(--neutral-hue) 10% 92%);
+  --muted-foreground: hsl(var(--neutral-hue) 5% 40%);
+
+  --accent: hsl(var(--base-hue) 20% 90%);
+  /* Tertiary Container / Highlight */
+  --accent-foreground: hsl(var(--base-hue) var(--base-sat) 40%);
+
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  --border: hsl(var(--neutral-hue) 10% 85%);
+  --input: hsl(var(--neutral-hue) 10% 85%);
+  --ring: hsl(var(--base-hue) var(--base-sat) 58%);
+
+  --radius: 1.75rem;
+  /* 28px - M3 Expressive Large */
+}
+
+.dark {
+  /* Material 3 Expressive - Dark */
+  /* Neutral Palette (Tinted with base hue) */
+  --neutral-hue: var(--base-hue);
+  --neutral-sat: 10%;
+
+  --background: hsl(var(--neutral-hue) 15% 6%);
+  /* Surface */
+  --foreground: hsl(var(--neutral-hue) 5% 95%);
+  /* On Surface */
+
+  --card: hsl(var(--neutral-hue) 15% 10%);
+  /* Surface Container Low */
+  --card-foreground: hsl(var(--neutral-hue) 5% 95%);
+
+  --surface-container: hsl(var(--neutral-hue) 15% 12%);
+  /* Surface Container */
+
+  --popover: hsl(var(--neutral-hue) 15% 10%);
+  --popover-foreground: hsl(var(--neutral-hue) 5% 95%);
+
+  --primary: hsl(var(--base-hue) 80% 75%);
+  /* Primary (Lighter) */
+  --primary-foreground: hsl(var(--base-hue) 90% 10%);
+  /* On Primary (Dark) */
+
+  --secondary: hsl(var(--base-hue) 15% 20%);
+  /* Secondary Container */
+  --secondary-foreground: hsl(var(--base-hue) 5% 95%);
+
+  --muted: hsl(var(--neutral-hue) 10% 20%);
+  --muted-foreground: hsl(var(--neutral-hue) 5% 70%);
+
+  --accent: hsl(var(--base-hue) 20% 25%);
+  /* Tertiary Container */
+  --accent-foreground: hsl(var(--base-hue) 80% 85%);
+
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  --border: hsl(var(--neutral-hue) 10% 25%);
+  --input: hsl(var(--neutral-hue) 10% 25%);
+  --ring: hsl(var(--base-hue) 80% 75%);
+}
+
+@layer base {
+  body {
+    font-family: 'Google Sans Local', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings: "slnt" 0, "wdth" 100, "GRAD" 0, "ROND" 0;
+    @apply bg-background text-foreground antialiased transition-colors duration-500;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* M3 Elevation / Shadows */
+  .elevation-1 {
+    box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  }
+
+  .elevation-2 {
+    box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  }
 }

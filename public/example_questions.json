@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "question": "### What is the primary function of a Central Bank?\n\nSelect the most appropriate option.",
+        "options": {
+            "a": "To issue currency and regulate money supply",
+            "b": "To provide loans to the public",
+            "c": "To manage private companies",
+            "d": "To trade in the stock market"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "id": 2,
+        "question": "Which of the following is **NOT** a commercial bank?",
+        "options": {
+            "a": "HDFC Bank",
+            "b": "ICICI Bank",
+            "c": "Reserve Bank of India",
+            "d": "State Bank of India"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "id": 3,
+        "question": "In React, what hook is used to manage state in a functional component?",
+        "options": {
+            "a": "useEffect",
+            "b": "useState",
+            "c": "useContext",
+            "d": "useReducer"
+        },
+        "correct_answer": "b"
+    }
+]
