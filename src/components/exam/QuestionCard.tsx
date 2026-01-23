@@ -18,10 +18,11 @@ interface QuestionCardProps {
     question: Question;
     selectedOption: string | null;
     onOptionSelect: (optionKey: string) => void;
-    showResult?: boolean; // If true, highlight correct/wrong
+    showResult?: boolean;
+    isSubmitting?: boolean;
 }
 
-export function QuestionCard({ question, selectedOption, onOptionSelect, showResult = false }: QuestionCardProps) {
+export function QuestionCard({ question, selectedOption, onOptionSelect, showResult = false, isSubmitting = false }: QuestionCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
 
     // Animate when question changes
@@ -55,10 +56,24 @@ export function QuestionCard({ question, selectedOption, onOptionSelect, showRes
 
                         if (showResult) {
                             if (isCorrect) {
-                                containerClass = "bg-green-500/10 ring-2 ring-green-500";
-                                icon = <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-500" />;
-                                textClass = "text-green-700 dark:text-green-300 font-bold";
-                            } else if (isSelected && !isCorrect) {
+                                if (isSelected) {
+                                    // Correct and Selected: Green Background
+                                    containerClass = "bg-green-500/10 ring-2 ring-green-500";
+                                    icon = <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-500" />;
+                                    textClass = "text-green-700 dark:text-green-300 font-bold";
+                                } else {
+                                    // Correct but NOT selected: Green Ring/Outline (if user was wrong)
+                                    // If user was right, this block won't be relevant for the correct answer since isSelected would be true.
+                                    // But if user picked something else, this block runs for the correct answer.
+                                    // We should only emphasize this if the user picked WRONG.
+                                    // BUT, standard behavior is usually to always show the correct answer.
+                                    // User said: "if they clicked wrong option ... show green outline one the correct answer"
+                                    containerClass = "bg-green-500/5 ring-1 ring-green-500 border border-transparent";
+                                    icon = <CheckCircle2 className="w-6 h-6 text-green-500 opacity-70" />;
+                                    textClass = "text-green-600 dark:text-green-400 font-medium";
+                                }
+                            } else if (isSelected) {
+                                // Selected but NOT correct: Red Background
                                 containerClass = "bg-red-500/10 ring-2 ring-red-500";
                                 icon = <Circle className="w-6 h-6 text-red-600 dark:text-red-500" />;
                                 textClass = "text-red-700 dark:text-red-300 font-bold";
@@ -86,6 +101,11 @@ export function QuestionCard({ question, selectedOption, onOptionSelect, showRes
                                     <span className="opacity-50 mr-3 uppercase text-sm font-bold tracking-wider">{key}</span>
                                     {value}
                                 </div>
+                                {isSelected && isSubmitting && (
+                                    <div className="flex-shrink-0 animate-in fade-in zoom-in duration-300">
+                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                )}
                             </button>
                         );
                     })}

@@ -28,6 +28,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
     const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
     const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
+    const [showingFeedback, setShowingFeedback] = useState(false);
 
     useEffect(() => {
         async function loadExamAndProgress() {
@@ -67,13 +68,18 @@ export function ExamContainer({ examId }: ExamContainerProps) {
     const currentQuestion = exam.questions[currentQuestionIndex];
 
     const handleOptionSelect = (key: string) => {
+        if (showingFeedback) return;
+
         setAnswers(prev => ({ ...prev, [currentQuestionIndex]: key }));
+        setShowingFeedback(true);
+
         // Auto-advance
         setTimeout(() => {
+            setShowingFeedback(false);
             if (currentQuestionIndex < exam.questions.length - 1) {
                 setCurrentQuestionIndex(prev => prev + 1);
             }
-        }, 400);
+        }, 2000);
     };
 
     const handleNext = () => {
@@ -216,7 +222,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
 
             {/* Main Content Wrapper for Sidebar Shift */}
             <div className={`flex flex-col flex-1 transition-transform duration-500 ease-in-out ${isAISidebarOpen ? "md:mr-[450px]" : ""}`}>
-                <main className="flex-1 p-6 md:p-12 overflow-y-auto w-full max-w-5xl mx-auto">
+                <main className="flex-1 flex flex-col justify-center p-6 md:p-12 overflow-y-auto w-full max-w-5xl mx-auto">
                     {currentQuestion && (
                         <QuestionCard
                             question={{
@@ -227,6 +233,8 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                             }}
                             selectedOption={answers[currentQuestionIndex] || null}
                             onOptionSelect={handleOptionSelect}
+                            showResult={showingFeedback || !!answers[currentQuestionIndex]}
+                            isSubmitting={showingFeedback}
                         />
                     )}
                 </main>

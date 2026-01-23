@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Send, Sparkles, MessageSquare, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/context/AuthContext";
 
 interface Message {
     role: 'user' | 'assistant';
@@ -18,6 +19,7 @@ interface AISidebarProps {
 }
 
 export function AISidebar({ isOpen, onClose, questionContext }: AISidebarProps) {
+    const { user } = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -146,9 +148,18 @@ export function AISidebar({ isOpen, onClose, questionContext }: AISidebarProps) 
                     )}>
                         <div className={cn(
                             "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                            msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary border border-primary/20"
+                            msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary border border-primary/20",
+                            msg.role === 'user' && user?.photoURL && "p-0 overflow-hidden"
                         )}>
-                            {msg.role === 'user' ? <MessageSquare className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                            {msg.role === 'user' ? (
+                                user?.photoURL ? (
+                                    <img src={user.photoURL} alt="Me" className="w-full h-full object-cover" />
+                                ) : (
+                                    <MessageSquare className="w-4 h-4" />
+                                )
+                            ) : (
+                                <Sparkles className="w-4 h-4" />
+                            )}
                         </div>
                         <div className={cn(
                             "p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed",
