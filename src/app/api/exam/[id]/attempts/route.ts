@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             .get();
         // Fetch Progress (Paused attempt)
         const progressDoc = await adminDb.collection("progress").doc(`${uid}_${id}`).get();
-        let pausedAttempt = null;
+        let pausedAttempt: any = null;
 
         if (progressDoc.exists) {
             const progressData = progressDoc.data();
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             };
         }
 
-        const attempts = attemptsSnapshot.docs.map(doc => ({
+        const attempts: any[] = attemptsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
