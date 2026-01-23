@@ -31,6 +31,20 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>{children}</AuthProvider>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    const savedHue = localStorage.getItem('bankexam-theme-hue');
+                    if (savedHue) {
+                      document.documentElement.style.setProperty('--base-hue', savedHue);
+                    }
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

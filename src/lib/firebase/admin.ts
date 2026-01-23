@@ -7,7 +7,14 @@ if (!serviceAccountKey) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY is not defined in environment variables.");
 }
 
-const serviceAccount = JSON.parse(serviceAccountKey);
+let serviceAccount;
+
+try {
+    serviceAccount = JSON.parse(serviceAccountKey);
+} catch (error) {
+    console.error("Error parsing FIREBASE_SERVICE_ACCOUNT_KEY:", error);
+    throw new Error("Invalid JSON in FIREBASE_SERVICE_ACCOUNT_KEY environment variable.");
+}
 
 if (!getApps().length) {
     initializeApp({

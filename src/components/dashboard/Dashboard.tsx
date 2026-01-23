@@ -94,8 +94,8 @@ export function Dashboard({ user }: DashboardProps) {
         <div ref={containerRef} className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-300">
             <header className="dash-item flex justify-between items-center mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, {user.displayName?.split(' ')[0]}</h1>
-                    <p className="text-muted-foreground">Ready to continue your preparation?</p>
+                    <h1 className="text-4xl  text-foreground mb-4">Welcome back, {user.displayName?.split(' ')[0]} !</h1>
+                    <p className="text-5xl font-semibold text-muted-foreground">Ready to continue your preparation?</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <ColorPicker />

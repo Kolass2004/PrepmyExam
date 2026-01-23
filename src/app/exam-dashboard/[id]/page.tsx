@@ -12,6 +12,7 @@ interface Attempt {
     score: number;
     completedAt: string;
     status: string;
+    skippedCount?: number;
 }
 
 interface ExamDetails {
@@ -118,23 +119,27 @@ export default function ExamDashboardPage() {
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
-            <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors px-4 py-2 hover:bg-secondary rounded-full">
+            <Link href="/" className="inline-flex items-center gap-2 hover:text-muted-foreground text-primary mb-8 transition-colors px-4 py-2 bg-secondary rounded-full">
                 <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>
 
             <header className="mb-12">
-                <h1 className="text-4xl font-bold text-foreground mb-2 tracking-tight">{exam?.title || "Exam Details"}</h1>
+                <h1 className="text-4xl font-bold hover:text-foreground mb-2 tracking-tight">{exam?.title || "Exam Details"}</h1>
                 <p className="text-muted-foreground text-lg">{exam?.questionCount} Questions • {attempts.length} Attempts</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent opacity-50" />
-                    <div className="flex items-center gap-3 mb-2 relative">
-                        <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                        <h3 className="text-amber-700 dark:text-amber-300 text-sm font-bold uppercase tracking-wider">Best Score</h3>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent opacity-50" />
+                <div className="flex items-center justify-between">
+                       <Trophy className="w-25 h-25 text-amber-600 dark:text-amber-400" />
+                    <div className="flex flex-col  gap-3 mb-2 relative">
+                       
+                        <h3 className="text-amber-700 dark:text-amber-300 text-xl font-bold uppercase tracking-wider">Best Score</h3>
+                        <p className="text-6xl font-bold text-foreground relative">{bestScore.toFixed(1)}<span className="text-3xl text-muted-foreground ml-1">%</span></p>
                     </div>
-                    <p className="text-5xl font-bold text-foreground relative">{bestScore.toFixed(1)}<span className="text-2xl text-muted-foreground ml-1">%</span></p>
+                    
+                  </div>
                 </div>
 
                 <div className="col-span-1 md:col-span-2 bg-card border-0 p-8 rounded-[2rem] shadow-sm elevation-1 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -257,7 +262,14 @@ export default function ExamDashboardPage() {
                                         ) : (
                                             <p className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{attempt.score.toFixed(1)}<span className="text-lg text-muted-foreground">%</span></p>
                                         )}
-                                        <p className="text-xs text-muted-foreground uppercase font-medium mt-1">{attempt.status}</p>
+                                        <div className="flex flex-col items-end mt-1">
+                                            <p className="text-xs text-muted-foreground uppercase font-medium mb-1">{attempt.status}</p>
+                                            {attempt.skippedCount !== undefined && attempt.skippedCount > 0 && (
+                                                <span className="px-2 py-0.5 bg-secondary text-muted-foreground text-[10px] font-bold uppercase rounded-md">
+                                                    Skipped: {attempt.skippedCount}
+                                                </span>
+                                            )}
+                                        </div>
                                     </Link>
                                 </div>
                             );

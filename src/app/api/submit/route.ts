@@ -4,7 +4,7 @@ import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
     try {
-        const { examId, userId, answers, score, completedAt } = await request.json();
+        const { examId, userId, answers, score, skippedCount, completedAt } = await request.json();
 
         if (!examId || !userId) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
             userId,
             answers,
             score,
+            skippedCount: skippedCount || 0,
             completedAt,
             status: "completed"
         });

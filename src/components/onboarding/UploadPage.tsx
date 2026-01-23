@@ -81,7 +81,7 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
         <div ref={containerRef} className="min-h-screen flex flex-col items-center justify-center p-6 bg-background transition-colors duration-500 relative">
             <Link
                 href="/"
-                className="absolute top-6 left-6 md:top-12 md:left-12 inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors px-4 py-2 hover:bg-secondary rounded-full font-medium"
+                className="absolute top-6 left-6 md:top-12 md:left-12 inline-flex items-center gap-2 text-muted-foreground text-primary transition-colors px-4 py-2 bg-secondary rounded-full font-medium"
             >
                 <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>

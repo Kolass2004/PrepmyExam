@@ -39,9 +39,9 @@ export function QuestionCard({ question, selectedOption, onOptionSelect, showRes
             <div className="bg-card backdrop-blur-md border-0 rounded-[2.5rem] p-8 md:p-12 shadow-xl elevation-2">
                 <div className="prose prose-lg dark:prose-invert max-w-none mb-10 text-foreground">
                     {/* Render Question Content (Markdown) */}
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <div className="font-bold text-3xl"><ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {question.content}
-                    </ReactMarkdown>
+                    </ReactMarkdown></div>
                 </div>
 
                 <div className="grid gap-4">

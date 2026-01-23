@@ -47,7 +47,7 @@
   --neutral-hue: var(--base-hue);
   --neutral-sat: 10%;
 
-  --background: hsl(var(--neutral-hue) 15% 99%);
+  --background: hsl(var(--neutral-hue) 25% 100%);
   /* Surface */
   --foreground: hsl(var(--neutral-hue) 10% 10%);
   /* On Surface */
@@ -96,27 +96,28 @@
   --neutral-hue: var(--base-hue);
   --neutral-sat: 10%;
 
-  --background: hsl(var(--neutral-hue) 15% 6%);
-  /* Surface */
-  --foreground: hsl(var(--neutral-hue) 5% 95%);
+  /* M3 Dark Theme - High Contrast */
+  --background: hsl(var(--neutral-hue) 10% 12%);
+  /* Surface - Almost Black */
+  --foreground: hsl(var(--neutral-hue) 5% 98%);
   /* On Surface */
 
-  --card: hsl(var(--neutral-hue) 15% 10%);
+  --card: hsl(var(--neutral-hue) 12% 20%);
   /* Surface Container Low */
-  --card-foreground: hsl(var(--neutral-hue) 5% 95%);
+  --card-foreground: hsl(var(--neutral-hue) 5% 98%);
 
-  --surface-container: hsl(var(--neutral-hue) 15% 12%);
+  --surface-container: hsl(var(--neutral-hue) 12% 12%);
   /* Surface Container */
 
-  --popover: hsl(var(--neutral-hue) 15% 10%);
-  --popover-foreground: hsl(var(--neutral-hue) 5% 95%);
+  --popover: hsl(var(--neutral-hue) 12% 10%);
+  --popover-foreground: hsl(var(--neutral-hue) 5% 98%);
 
   --primary: hsl(var(--base-hue) 80% 75%);
   /* Primary (Lighter) */
   --primary-foreground: hsl(var(--base-hue) 90% 10%);
   /* On Primary (Dark) */
 
-  --secondary: hsl(var(--base-hue) 15% 20%);
+  --secondary: hsl(var(--base-hue) 15% 30%);
   /* Secondary Container */
   --secondary-foreground: hsl(var(--base-hue) 5% 95%);
 
