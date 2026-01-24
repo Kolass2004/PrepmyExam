@@ -9,7 +9,9 @@ const KEYS = [
     process.env.GEMINI_API_D,
 ].filter(Boolean) as string[];
 
-let currentKeyIndex = 0;
+// Initialize with a random index to distribute load across keys
+// This helps prevent "Key 0" from being hammered/exhausted exclusively on every serverless cold start
+let currentKeyIndex = Math.floor(Math.random() * KEYS.length);
 let lastResetTime = Date.now();
 
 const RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours

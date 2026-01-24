@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithGemini } from "@/lib/gemini";
 
+export const maxDuration = 60; // Allow up to 60 seconds for AI response
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();

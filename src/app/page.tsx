@@ -7,6 +7,9 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { UploadPage } from "@/components/onboarding/UploadPage";
 import { Loader2 } from "lucide-react";
 
+import { db } from "@/lib/firebase/client";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const [hasExams, setHasExams] = useState<boolean | null>(null);
@@ -17,17 +20,16 @@ export default function Home() {
       if (!user) return;
       setDataLoading(true);
       try {
-        // TODO: Replace with actual API call to check if user has exams
-        // For now, simulate no exams (or check local storage for dev)
-        // In real app: fetch(`/api/user/${user.uid}/status`)
-        const res = await fetch(`/api/user/status?uid=${user.uid}`);
-        if (res.ok) {
-          const data = await res.json();
-          setHasExams(data.hasExams);
-        } else {
-          setHasExams(false);
-        }
+        // Direct Client-Side Firestore Query to avoid Serverless Cold Start
+        const q = query(
+          collection(db, "exams"),
+          where("userId", "==", user.uid),
+          limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        setHasExams(!querySnapshot.empty);
       } catch (err) {
+        console.error("Error checking exams:", err);
         setHasExams(false);
       } finally {
         setDataLoading(false);

@@ -279,6 +279,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                 isOpen={isAISidebarOpen}
                 onClose={() => setIsAISidebarOpen(false)}
                 questionContext={`
+                    Question Number: ${currentQuestionIndex + 1}
                     Question: ${currentQuestion?.question || currentQuestion?.content}
                     Options:
                     ${JSON.stringify(currentQuestion?.options)}
