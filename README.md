@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrepmyExam - AI-Powered Competitive Exam Preparation Platform
 
-## Getting Started
+**PrepmyExam** is a modern, comprehensive web application designed to help aspirants prepare for Indian competitive exams (Banking, SSC, UPSC, Railways, State PSCs). It combines real-time exam simulation, AI-powered tutoring, and detailed performance analytics to give students a competitive edge.
 
-First, run the development server:
+![PrepmyExam Dashboard](/dashboard-preview.png)
+
+## 🚀 Key Features
+
+### 🎓 Core Learning & Exam Engine
+- **Real Exam Interface**: Practice environment mimicking actuaI exam interfaces (Timer, Question Palette, Mark for Review).
+- **AI-Powered Prompt Creator**: Generate custom study prompts and question sets for specific exams (IBPS, SSC CGL, UPSC) using advanced AI integration.
+- **Detailed Analytics**: Track performance with "Overall Score" and "Total Attempts" metrics.
+- **Review System**: Comprehensive post-exam analysis to identify weak areas.
+
+### 👤 User Experience & Identity
+- **Dynamic Dashboard**: Personalized landing page with quick access to stats, prompt creator, and recent question sets.
+- **Public Profile System**: Shareable user profiles (`/user/[uid]`) featuring a **GitHub-style Contribution Graph** to visualize study consistency.
+- **Customizable Themes**: 
+    - Full **Dark/Light Mode** support.
+    - **Dynamic Color Themes**: Users can choose their preferred primary color (Violet, Blue, Emerald, Amber, Rose, Slate).
+
+### 🛠️ Educational Tools
+- **Upload & Parse**: Support for uploading custom question sets (JSON).
+- **Exam Management**: Rename, organize, and track history of taken exams.
+- **Mobile Responsive**: Fully optimized mobile interface with responsive navigation and adaptive layouts.
+
+## 🛠️ Technology Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + CSS Variables for dynamic theming.
+- **Authentication**: [Firebase Auth](https://firebase.google.com/docs/auth) (Google Sign-In).
+- **Database**: [Firebase Firestore](https://firebase.google.com/docs/firestore).
+- **Animations**: [GSAP](https://greensock.com/gsap) & [Framer Motion](https://www.framer.com/motion/).
+- **Icons**: [Lucide React](https://lucide.dev/).
+- **AI Integration**: Google Gemini API (via custom `gemini.ts` lib).
+
+## 📂 Project Structure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+src/
+├── app/                  # Next.js App Router pages
+│   ├── api/              # API Routes (Chat, User Stats, Exam management)
+│   ├── auth/             # Authentication pages
+│   ├── dashboard/        # Main User Dashboard
+│   ├── exam/             # Exam taking interface
+│   ├── prompt/           # AI Prompt Creator tool
+│   └── user/             # Public Profile pages
+├── components/           # Reusable UI Components
+│   ├── auth/             # Login buttons/forms
+│   ├── dashboard/        # Dashboard widgets (UserMenu, Stats)
+│   ├── exam/             # Exam interface components
+│   └── ui/               # Generic UI elements
+├── lib/                  # Utilities & Configurations
+│   ├── firebase/         # Firebase Client/Admin init
+│   └── gemini.ts         # AI Model configuration
+└── context/              # React Context (AuthContext)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚡ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/bankexam.git
+    cd bankexam
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-## Learn More
+3.  **Configure Environment Variables**:
+    Create a `.env.local` file in the root directory and add your Firebase and AI API credentials:
+    ```env
+    NEXT_PUBLIC_FIREBASE_API_KEY=...
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+    # ... other firebase config
+    GEMINI_API_KEY=...
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+4.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5.  **Open the app**:
+    Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📄 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+© 2026 Uvite Technologies. All rights reserved.
