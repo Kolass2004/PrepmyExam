@@ -81,7 +81,7 @@ export function LoginPage() {
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                         <GraduationCap className="w-8 h-8 text-primary" />
-                        <span>Prepmyexam</span>
+                        <span>PrepmyExam</span>
                     </div>
 
                     {/* Desktop Menu */}

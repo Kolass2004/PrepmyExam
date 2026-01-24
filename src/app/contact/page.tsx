@@ -6,12 +6,38 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useState } from "react";
 
 export default function ContactPage() {
+    const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSubmitted(true);
-        // In a real app, handle form submission here
+        setLoading(true);
+        setError(null);
+
+        const formData = new FormData(e.target as HTMLFormElement);
+        const data = {
+            name: formData.get("name"),
+            email: formData.get("email"),
+            subject: formData.get("subject"),
+            message: formData.get("message"),
+        };
+
+        try {
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) throw new Error("Failed to send message");
+
+            setSubmitted(true);
+        } catch (err) {
+            setError("Something went wrong. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -44,7 +70,7 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="text-lg font-bold mb-1">Email Us</h3>
                                     <p className="text-muted-foreground">raniv2057@gmail.com</p>
-                                   
+
                                 </div>
                             </div>
 
@@ -68,7 +94,7 @@ export default function ContactPage() {
                                     <p className="text-muted-foreground">
                                         Uvite Technologies<br />
                                         Dindigul, Tamil nadu - 624215
-                                       
+
                                     </p>
                                 </div>
                             </div>
@@ -98,6 +124,7 @@ export default function ContactPage() {
                                     <label htmlFor="name" className="block text-sm font-medium mb-2 pl-1">Name</label>
                                     <input
                                         id="name"
+                                        name="name"
                                         type="text"
                                         required
                                         className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-transparent focus:border-primary focus:bg-background outline-none transition-all"
@@ -108,6 +135,7 @@ export default function ContactPage() {
                                     <label htmlFor="email" className="block text-sm font-medium mb-2 pl-1">Email</label>
                                     <input
                                         id="email"
+                                        name="email"
                                         type="email"
                                         required
                                         className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-transparent focus:border-primary focus:bg-background outline-none transition-all"
@@ -118,6 +146,7 @@ export default function ContactPage() {
                                     <label htmlFor="subject" className="block text-sm font-medium mb-2 pl-1">Subject</label>
                                     <select
                                         id="subject"
+                                        name="subject"
                                         className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-transparent focus:border-primary focus:bg-background outline-none transition-all"
                                     >
                                         <option>General Inquiry</option>
@@ -130,17 +159,22 @@ export default function ContactPage() {
                                     <label htmlFor="message" className="block text-sm font-medium mb-2 pl-1">Message</label>
                                     <textarea
                                         id="message"
+                                        name="message"
                                         required
                                         rows={5}
                                         className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-transparent focus:border-primary focus:bg-background outline-none transition-all resize-none"
                                         placeholder="How can we help you?"
                                     />
                                 </div>
+                                {error && (
+                                    <p className="text-red-500 text-sm">{error}</p>
+                                )}
                                 <button
                                     type="submit"
-                                    className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity"
+                                    disabled={loading}
+                                    className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Send Message
+                                    {loading ? "Sending..." : "Send Message"}
                                 </button>
                             </form>
                         )}
