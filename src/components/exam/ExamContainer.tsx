@@ -202,7 +202,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                         <Sparkles className="w-4 h-4" /> <span className="hidden md:inline">Ask AI</span>
                     </button>
 
-                    {currentQuestionIndex === 0 && Object.keys(answers).length === 0 ? (
+                    {Object.keys(answers).length === 0 ? (
                         <button
                             onClick={() => setShowExitModal(true)}
                             className="px-6 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 border border-transparent rounded-full text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
@@ -249,12 +249,21 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                         <ArrowLeft className="w-5 h-5" /> Previous
                     </button>
                     {currentQuestionIndex === exam.questions.length - 1 ? (
-                        <button
-                            onClick={handleSubmitClick}
-                            className="px-8 py-3.5 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-bold text-lg"
-                        >
-                            Submit Exam <ArrowRight className="w-5 h-5" />
-                        </button>
+                        Object.keys(answers).length === 0 ? (
+                            <button
+                                onClick={() => setShowExitModal(true)}
+                                className="px-8 py-3.5 rounded-full bg-secondary text-foreground hover:bg-secondary/80 border border-border shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-bold text-lg"
+                            >
+                                Close Exam <ArrowRight className="w-5 h-5" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleSubmitClick}
+                                className="px-8 py-3.5 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-bold text-lg"
+                            >
+                                Submit Exam <ArrowRight className="w-5 h-5" />
+                            </button>
+                        )
                     ) : (
                         <button
                             onClick={handleSkip}
