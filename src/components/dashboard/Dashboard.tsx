@@ -142,20 +142,20 @@ export function Dashboard({ user }: DashboardProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <div className="dash-item bg-primary/10 border-0 p-8 rounded-[2rem] relative overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <h3 className="text-primary text-sm font-bold uppercase tracking-wider mb-2 relative">Overall Score</h3>
-                    <p className="text-5xl font-bold text-foreground relative">{loading ? "--" : stats.overallScore.toFixed(1)}<span className="text-2xl text-muted-foreground ml-1">%</span></p>
+                    <h3 className="text-primary text-sm font-bold uppercase tracking-wider mb-6 relative">Overall Score</h3>
+                    <p className="text-6xl font-bold text-foreground relative">{loading ? "--" : stats.overallScore.toFixed(1)}<span className="text-2xl text-muted-foreground ml-1">%</span></p>
                     <Target className="absolute bottom-6 right-6 w-16 h-16 text-primary opacity-20 pointer-events-none" />
                 </div>
 
                 <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow">
-                    <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">Exams Available</h3>
-                    <p className="text-5xl font-bold text-foreground">{exams.length}</p>
+                    <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-6">Exams Available</h3>
+                    <p className="text-6xl font-bold text-foreground">{exams.length}</p>
                     <BookOpen className="absolute bottom-6 right-6 w-16 h-16 text-muted-foreground opacity-10 pointer-events-none group-hover:text-primary group-hover:opacity-20 transition-colors" />
                 </div>
 
                 <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow">
-                    <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">Total Attempts</h3>
-                    <p className="text-5xl font-bold text-foreground">{loading ? "-" : stats.totalAttempts}</p>
+                    <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-6">Total Attempts</h3>
+                    <p className="text-6xl font-bold text-foreground">{loading ? "-" : stats.totalAttempts}</p>
                     <History className="absolute bottom-6 right-6 w-16 h-16 text-muted-foreground opacity-10 pointer-events-none group-hover:text-primary group-hover:opacity-20 transition-colors" />
                 </div>
 

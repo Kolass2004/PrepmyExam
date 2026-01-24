@@ -15,7 +15,7 @@ interface UploadPageProps {
 
 export function UploadPage({ onUploadSuccess }: UploadPageProps) {
     const { user } = useAuth();
-    const [mode, setMode] = useState<"upload" | "input">("upload");
+    const [mode, setMode] = useState<"upload" | "input">("input");
     const [jsonContent, setJsonContent] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,16 +42,33 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
 
         try {
             let data;
+            let title = null;
             try {
-                data = JSON.parse(jsonContent);
+                const parsed = JSON.parse(jsonContent);
+                if (Array.isArray(parsed)) {
+                    // Check if it's an array of questions or an array wrapper around an exam object
+                    if (parsed.length > 0 && parsed[0].questions && Array.isArray(parsed[0].questions)) {
+                        // Case: [{ title: "...", questions: [...] }]
+                        data = parsed[0].questions;
+                        if (parsed[0].title) title = parsed[0].title;
+                    } else {
+                        // Case: [ {id:1, ...}, {id:2, ...} ]
+                        data = parsed;
+                    }
+                } else if (parsed.questions && Array.isArray(parsed.questions)) {
+                    data = parsed.questions;
+                    if (parsed.title) title = parsed.title;
+                } else {
+                    throw new Error("Invalid structure");
+                }
             } catch (e) {
-                throw new Error("Invalid JSON format");
+                throw new Error("Invalid JSON format. Expected an array of questions or an object with 'questions' array.");
             }
 
             const res = await fetch("/api/upload", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ questions: data, userId: user.uid }),
+                body: JSON.stringify({ questions: data, userId: user.uid, title }),
             });
 
             if (!res.ok) throw new Error("Failed to save data");

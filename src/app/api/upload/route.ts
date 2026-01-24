@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
             // If too complex, just take userId from body.
         }
 
-        const { questions, userId } = await request.json();
+        const { questions, userId, title } = await request.json();
 
         if (!questions || !Array.isArray(questions) || !userId) {
             return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             uploadedAt: new Date().toISOString(),
             questionCount: questions.length,
             questions: questions, // Storing all questions in the doc (might hit limit if huge, but fine for now)
-            title: `Exam Set ${new Date().toLocaleDateString()}`
+            title: title || `Exam Set ${new Date().toLocaleDateString()}`
         });
 
         return NextResponse.json({ success: true, examId: examRef.id });

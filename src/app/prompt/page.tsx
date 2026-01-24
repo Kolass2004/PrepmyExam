@@ -65,19 +65,26 @@ export default function PromptPage() {
             contentRequest = `for the subject ${subject}`;
         }
 
+        const safeTitle = `${exam} ${subject} Practice Set`;
+
         return `give me the ${count} questions based on ${exam} exam ${contentRequest} in this json format
 
 [
     {
-        "id": 1,
-        "question": "### Question text here",
-        "options": {
-            "a": "Option A",
-            "b": "Option B",
-            "c": "Option C",
-            "d": "Option D"
-        },
-        "correct_answer": "a"
+        "title": "${safeTitle}",
+        "questions": [
+            {
+                "id": 1,
+                "question": "### Question text here",
+                "options": {
+                    "a": "Option A",
+                    "b": "Option B",
+                    "c": "Option C",
+                    "d": "Option D"
+                },
+                "correct_answer": "a"
+            }
+        ]
     }
 ]`;
     };

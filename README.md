@@ -1,5 +1,7 @@
 # PrepmyExam - AI-Powered Competitive Exam Preparation Platform
 
+**Live Demo:** [https://examprep.kolassrexon.in/](https://examprep.kolassrexon.in/) 🚀
+
 **PrepmyExam** is a modern, comprehensive web application designed to help aspirants prepare for Indian competitive exams (Banking, SSC, UPSC, Railways, State PSCs). It combines real-time exam simulation, AI-powered tutoring, and detailed performance analytics to give students a competitive edge.
 
 ![PrepmyExam Dashboard](/dashboard-preview.png)
@@ -55,6 +57,33 @@ src/
 │   └── gemini.ts         # AI Model configuration
 └── context/              # React Context (AuthContext)
 ```
+
+## 📝 JSON Upload Format
+
+You can upload custom exam sets using a JSON file. The system supports defining a custom `title` and an array of `questions`.
+
+```json
+[
+  {
+    "title": "Bank PO Reasoning Practice Set",
+    "questions": [
+      {
+        "id": 1,
+        "question": "### Question text here",
+        "options": {
+          "a": "Option A",
+          "b": "Option B",
+          "c": "Option C",
+          "d": "Option D"
+        },
+        "correct_answer": "a"
+      }
+    ]
+  }
+]
+```
+
+**Note:** You can also paste this JSON content directly into the **JSON Input** tab on the upload page.
 
 ## ⚡ Getting Started
 
