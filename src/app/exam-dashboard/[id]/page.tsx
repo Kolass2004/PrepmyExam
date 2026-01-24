@@ -6,6 +6,8 @@ import { Loader2, PlayCircle, History, ArrowLeft, Trophy, RotateCcw, Trash2, Che
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { formatIndianDate } from "@/lib/utils";
+import { DiscardModal } from "@/components/exam/DiscardModal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface Attempt {
     id: string;
@@ -28,6 +30,9 @@ export default function ExamDashboardPage() {
     const [exam, setExam] = useState<ExamDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [hasProgress, setHasProgress] = useState(false);
+
+    // Modal State
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
 
     // Deletion State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -115,13 +120,34 @@ export default function ExamDashboardPage() {
         }
     };
 
+    const handleDiscardConfirm = async () => {
+        setShowDiscardModal(false);
+        setLoading(true);
+        try {
+            await fetch(`/api/exam/${id}/progress`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user?.uid })
+            });
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
+        }
+    };
+
     const bestScore = attempts.reduce((max, attempt) => Math.max(max, attempt.score), 0);
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
-            <Link href="/" className="inline-flex items-center gap-2 hover:text-muted-foreground text-primary mb-8 transition-colors px-4 py-2 bg-secondary rounded-full">
-                <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-            </Link>
+            <div className="flex items-center justify-between mb-8">
+                <Link href="/" className="inline-flex items-center gap-2 hover:text-muted-foreground text-primary transition-colors px-4 py-2 bg-secondary rounded-full">
+                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+                </Link>
+                <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                </div>
+            </div>
 
             <header className="mb-12">
                 <h1 className="text-4xl font-bold hover:text-foreground mb-2 tracking-tight">{exam?.title || "Exam Details"}</h1>
@@ -130,16 +156,16 @@ export default function ExamDashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent opacity-50" />
-                <div className="flex items-center justify-between">
-                       <Trophy className="w-25 h-25 text-amber-600 dark:text-amber-400" />
-                    <div className="flex flex-col  gap-3 mb-2 relative">
-                       
-                        <h3 className="text-amber-700 dark:text-amber-300 text-xl font-bold uppercase tracking-wider">Best Score</h3>
-                        <p className="text-6xl font-bold text-foreground relative">{bestScore.toFixed(1)}<span className="text-3xl text-muted-foreground ml-1">%</span></p>
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent opacity-50" />
+                    <div className="flex items-center justify-between">
+                        <Trophy className="w-25 h-25 text-amber-600 dark:text-amber-400" />
+                        <div className="flex flex-col  gap-3 mb-2 relative">
+
+                            <h3 className="text-amber-700 dark:text-amber-300 text-xl font-bold uppercase tracking-wider">Best Score</h3>
+                            <p className="text-6xl font-bold text-foreground relative">{bestScore.toFixed(1)}<span className="text-3xl text-muted-foreground ml-1">%</span></p>
+                        </div>
+
                     </div>
-                    
-                  </div>
                 </div>
 
                 <div className="col-span-1 md:col-span-2 bg-card border-0 p-8 rounded-[2rem] shadow-sm elevation-1 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -155,16 +181,7 @@ export default function ExamDashboardPage() {
                         {hasProgress ? (
                             <>
                                 <button
-                                    onClick={async () => {
-                                        if (!confirm("Discard saved progress?")) return;
-                                        setLoading(true);
-                                        await fetch(`/api/exam/${id}/progress`, {
-                                            method: "DELETE",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ userId: user?.uid })
-                                        });
-                                        window.location.reload();
-                                    }}
+                                    onClick={() => setShowDiscardModal(true)}
                                     className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 rounded-full font-medium transition-colors"
                                 >
                                     Discard
@@ -277,6 +294,12 @@ export default function ExamDashboardPage() {
                     )}
                 </div>
             </section>
+
+            <DiscardModal
+                isOpen={showDiscardModal}
+                onClose={() => setShowDiscardModal(false)}
+                onConfirm={handleDiscardConfirm}
+            />
         </div>
     );
 }
