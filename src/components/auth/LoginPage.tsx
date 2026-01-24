@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -18,12 +18,15 @@ import {
     Landmark,
     Train,
     Scale,
-    Building2
+    Building2,
+    Menu,
+    X
 } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function LoginPage() {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const heroRef = useRef<HTMLDivElement>(null);
 
@@ -78,21 +81,42 @@ export function LoginPage() {
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                         <GraduationCap className="w-8 h-8 text-primary" />
-                        <span>Examprep</span>
+                        <span>Prepmyexam</span>
                     </div>
 
+                    {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-8">
-                       
+                        {/* Spacer or additional links if needed */}
                     </div>
 
-                    <div className="flex items-center gap-4">
-                         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-sm font-medium hover:text-primary transition-colors">Home</button>
+                    <div className="hidden md:flex items-center gap-4">
+                        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-sm font-medium hover:text-primary transition-colors">Home</button>
                         <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
                         <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors">Contact Us</Link>
                         <ThemeToggle />
-                       
                     </div>
+
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden p-2 text-foreground"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <div className="absolute top-16 left-0 w-full bg-background border-b border-border p-6 flex flex-col gap-6 shadow-2xl md:hidden animate-in slide-in-from-top-4">
+                        <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsMobileMenuOpen(false); }} className="text-lg font-medium hover:text-primary transition-colors text-left">Home</button>
+                        <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium hover:text-primary transition-colors">About</Link>
+                        <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium hover:text-primary transition-colors">Contact Us</Link>
+                        <div className="flex items-center justify-between border-t border-border pt-4">
+                            <span className="text-sm text-muted-foreground">Switch Theme</span>
+                            <ThemeToggle />
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* Hero Section */}
@@ -117,7 +141,7 @@ export function LoginPage() {
                                 <LoginButton className="w-full sm:w-auto text-lg px-8 py-6 h-auto shadow-none border-0" text="Start Preparing Now" />
                             </div>
                         </div>
-                      
+
                     </div>
 
                     <div className="mt-16 flex items-center justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
@@ -203,7 +227,7 @@ export function LoginPage() {
                     <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter mb-4">
                             <GraduationCap className="w-8 h-8 text-primary" />
-                            <span>Examprep</span>
+                            <span>PrepmyExam</span>
                         </div>
                         <p className="text-muted-foreground max-w-sm">
                             Empowering aspirants to achieve their dreams through accessible, high-quality education technology.
@@ -212,24 +236,24 @@ export function LoginPage() {
                     <div>
                         <h4 className="font-bold mb-4">Exams</h4>
                         <ul className="space-y-2 text-muted-foreground">
-                            <li><a href="#" className="hover:text-primary">Banking</a></li>
-                            <li><a href="#" className="hover:text-primary">SSC</a></li>
-                            <li><a href="#" className="hover:text-primary">Railways</a></li>
-                            <li><a href="#" className="hover:text-primary">Teaching</a></li>
+                            <li><a href="https://www.ibps.in/" className="hover:text-primary">Banking</a></li>
+                            <li><a href="https://ssc.gov.in/" className="hover:text-primary">SSC</a></li>
+                            <li><a href="https://www.rrbapply.gov.in/" className="hover:text-primary">Railways</a></li>
+                            <li><a href="https://ctet.nic.in/" className="hover:text-primary">Teaching</a></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="font-bold mb-4">Company</h4>
                         <ul className="space-y-2 text-muted-foreground">
-                            <li><a href="#" className="hover:text-primary">About Us</a></li>
-                            <li><a href="#" className="hover:text-primary">Contact</a></li>
-                            <li><a href="#" className="hover:text-primary">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-primary">Terms of Service</a></li>
+                            <li><a href="/about" className="hover:text-primary">About Us</a></li>
+                            <li><a href="/contact" className="hover:text-primary">Contact</a></li>
+                            <li><a href="/privacy" className="hover:text-primary">Privacy Policy</a></li>
+                            <li><a href="/terms" className="hover:text-primary">Terms of Service</a></li>
                         </ul>
                     </div>
                 </div>
                 <div className="max-w-7xl mx-auto pt-8 border-t border-border text-center text-muted-foreground">
-                    © 2026 Examprep. All rights reserved.
+                    © 2026 Uvite Technologies. All rights reserved.
                 </div>
             </footer>
         </div>

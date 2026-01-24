@@ -43,8 +43,8 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold mb-1">Email Us</h3>
-                                    <p className="text-muted-foreground">support@examprep.com</p>
-                                    <p className="text-muted-foreground">careers@examprep.com</p>
+                                    <p className="text-muted-foreground">raniv2057@gmail.com</p>
+                                   
                                 </div>
                             </div>
 
@@ -54,7 +54,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold mb-1">Call Us</h3>
-                                    <p className="text-muted-foreground">+91 98765 43210</p>
+                                    <p className="text-muted-foreground">+91 97511 48603</p>
                                     <p className="text-sm text-muted-foreground mt-1">Mon-Sat from 9am to 6pm</p>
                                 </div>
                             </div>
@@ -66,9 +66,9 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="text-lg font-bold mb-1">Visit Us</h3>
                                     <p className="text-muted-foreground">
-                                        Examprep HQ<br />
-                                        123, Tech Park, Sector 5<br />
-                                        Bangalore, Karnataka - 560001
+                                        Uvite Technologies<br />
+                                        Dindigul, Tamil nadu - 624215
+                                       
                                     </p>
                                 </div>
                             </div>
