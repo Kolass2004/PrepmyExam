@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { QuestionCard } from "./QuestionCard";
 import { Loader2, ArrowRight, ArrowLeft, Pause, Save, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { db } from "@/lib/firebase/client";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { PauseModal } from "./PauseModal";
 import { SubmitModal } from "./SubmitModal";
@@ -23,38 +25,48 @@ export function ExamContainer({ examId }: ExamContainerProps) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string>>({}); // index -> optionKey
     const [loading, setLoading] = useState(true);
+
+    const [showingFeedback, setShowingFeedback] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
     const [showPauseModal, setShowPauseModal] = useState(false);
     const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
-    const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
-    const [showingFeedback, setShowingFeedback] = useState(false);
 
     useEffect(() => {
         async function loadExamAndProgress() {
+            setLoading(true);
             try {
-                // Fetch Exam
-                const res = await fetch(`/api/exam/${examId}`);
-                if (!res.ok) throw new Error("Failed to load exam");
-                const data = await res.json();
-                setExam(data);
+                // 1. Fetch Exam Direct from Firestore (Client-Side)
+                const examRef = doc(db, "exams", examId);
+                const examSnap = await getDoc(examRef);
 
-                // Fetch Progress
+                if (!examSnap.exists()) {
+                    throw new Error("Exam not found");
+                }
+                const examData = examSnap.data();
+                setExam(examData);
+
+                // 2. Fetch Progress Direct from Firestore (Client-Side)
                 if (user) {
-                    const progRes = await fetch(`/api/exam/${examId}/progress?uid=${user.uid}`);
-                    const progData = await progRes.json();
-                    if (progData.progress) {
-                        setAnswers(progData.progress.answers || {});
-                        setCurrentQuestionIndex(progData.progress.currentQuestionIndex || 0);
+                    const progressRef = doc(db, "users", user.uid, "progress", examId);
+                    const progressSnap = await getDoc(progressRef);
+
+                    if (progressSnap.exists()) {
+                        const progData = progressSnap.data();
+                        setAnswers(progData.answers || {});
+                        setCurrentQuestionIndex(progData.currentQuestionIndex || 0);
                     }
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Error loading exam:", err);
             } finally {
                 setLoading(false);
             }
         }
-        loadExamAndProgress();
+        if (user) {
+            loadExamAndProgress();
+        }
     }, [examId, user]);
 
     if (loading || !exam) {

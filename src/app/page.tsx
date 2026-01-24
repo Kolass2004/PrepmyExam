@@ -20,14 +20,12 @@ export default function Home() {
       if (!user) return;
       setDataLoading(true);
       try {
-        // Direct Client-Side Firestore Query to avoid Serverless Cold Start
-        const q = query(
-          collection(db, "exams"),
-          where("userId", "==", user.uid),
-          limit(1)
-        );
-        const querySnapshot = await getDocs(q);
-        setHasExams(!querySnapshot.empty);
+        // Direct Firestore query to avoid serverless cold starts
+        const examsRef = collection(db, "exams");
+        const q = query(examsRef, where("userId", "==", user.uid), limit(1));
+        const snapshot = await getDocs(q);
+
+        setHasExams(!snapshot.empty);
       } catch (err) {
         console.error("Error checking exams:", err);
         setHasExams(false);
