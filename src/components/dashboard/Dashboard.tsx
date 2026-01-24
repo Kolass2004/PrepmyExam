@@ -3,11 +3,12 @@
 import { User } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { LogOut, Loader2, PlayCircle, BarChart2, Plus, Sparkles } from "lucide-react";
+import { LogOut, Loader2, PlayCircle, BarChart2, Plus, Sparkles, Target, BookOpen, History, MoreVertical, Trash2 } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import Link from "next/link";
 import { LogoutModal } from "./LogoutModal";
+import { DeleteExamModal } from "./DeleteExamModal";
 import { formatIndianDate } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 
@@ -33,8 +34,10 @@ export function Dashboard({ user }: DashboardProps) {
     const [loading, setLoading] = useState(true);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-    // Rename State
+    // Rename & Delete State
     const [editingExam, setEditingExam] = useState<Exam | null>(null);
+    const [deletingExam, setDeletingExam] = useState<Exam | null>(null);
+    const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +55,33 @@ export function Dashboard({ user }: DashboardProps) {
         // Update local state
         setExams(prev => prev.map(e => e.id === editingExam.id ? { ...e, title: newTitle } : e));
     };
+
+    const handleDelete = async () => {
+        if (!deletingExam) return;
+
+        try {
+            await fetch(`/api/exam/${deletingExam.id}`, {
+                method: "DELETE"
+            });
+            // Update local state
+            setExams(prev => prev.filter(e => e.id !== deletingExam.id));
+            setDeletingExam(null);
+        } catch (error) {
+            console.error("Failed to delete exam", error);
+        }
+    };
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuOpenId && !(event.target as Element).closest('.menu-trigger')) {
+                setMenuOpenId(null);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [menuOpenId]);
+
 
     useEffect(() => {
         async function fetchData() {
@@ -110,20 +140,23 @@ export function Dashboard({ user }: DashboardProps) {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div className="dash-item bg-primary/10 border-0 p-8 rounded-[2rem] relative overflow-hidden group">
+                <div className="dash-item bg-primary/10 border-0 p-8 rounded-[2rem] relative overflow-hidden group hover:shadow-lg transition-shadow">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <h3 className="text-primary text-sm font-bold uppercase tracking-wider mb-2 relative">Overall Score</h3>
                     <p className="text-5xl font-bold text-foreground relative">{loading ? "--" : stats.overallScore.toFixed(1)}<span className="text-2xl text-muted-foreground ml-1">%</span></p>
+                    <Target className="absolute bottom-6 right-6 w-16 h-16 text-primary opacity-20 pointer-events-none" />
                 </div>
 
-                <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm">
+                <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow">
                     <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">Exams Available</h3>
                     <p className="text-5xl font-bold text-foreground">{exams.length}</p>
+                    <BookOpen className="absolute bottom-6 right-6 w-16 h-16 text-muted-foreground opacity-10 pointer-events-none group-hover:text-primary group-hover:opacity-20 transition-colors" />
                 </div>
 
-                <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm">
+                <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow">
                     <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">Total Attempts</h3>
                     <p className="text-5xl font-bold text-foreground">{loading ? "-" : stats.totalAttempts}</p>
+                    <History className="absolute bottom-6 right-6 w-16 h-16 text-muted-foreground opacity-10 pointer-events-none group-hover:text-primary group-hover:opacity-20 transition-colors" />
                 </div>
 
                 <div className="dash-item h-full">
@@ -159,7 +192,7 @@ export function Dashboard({ user }: DashboardProps) {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {exams.map(exam => (
-                            <div key={exam.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300">
+                            <div key={exam.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 relative">
                                 <Link href={`/exam-dashboard/${exam.id}`} className="block">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center text-primary">
@@ -180,17 +213,49 @@ export function Dashboard({ user }: DashboardProps) {
                                     <Link href={`/exam-dashboard/${exam.id}`} className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-medium transition-all shadow-sm hover:shadow-md">
                                         <PlayCircle className="w-5 h-5" /> View
                                     </Link>
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation(); // Prevent navigation
-                                            setEditingExam(exam);
-                                        }}
-                                        className="w-12 h-12 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors group-hover/edit:text-primary"
-                                        title="Rename Exam"
-                                    >
-                                        <Edit2 className="w-5 h-5" />
-                                    </button>
+
+                                    {/* Menu Trigger */}
+                                    <div className="relative menu-trigger">
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setMenuOpenId(menuOpenId === exam.id ? null : exam.id);
+                                            }}
+                                            className="w-12 h-12 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
+                                            title="More Options"
+                                        >
+                                            <MoreVertical className="w-5 h-5" />
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {menuOpenId === exam.id && (
+                                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setEditingExam(exam);
+                                                        setMenuOpenId(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors text-left"
+                                                >
+                                                    <Edit2 className="w-4 h-4" /> Rename
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setDeletingExam(exam);
+                                                        setMenuOpenId(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                                                >
+                                                    <Trash2 className="w-4 h-4" /> Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -203,6 +268,13 @@ export function Dashboard({ user }: DashboardProps) {
                 currentTitle={editingExam?.title || ""}
                 onClose={() => setEditingExam(null)}
                 onSave={handleRename}
+            />
+
+            <DeleteExamModal
+                isOpen={!!deletingExam}
+                examTitle={deletingExam?.title || ""}
+                onClose={() => setDeletingExam(null)}
+                onConfirm={handleDelete}
             />
 
             <LogoutModal

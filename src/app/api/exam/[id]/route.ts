@@ -44,3 +44,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    try {
+        await adminDb.collection("exams").doc(id).delete();
+        // Note: Subcollections like 'questions' or 'attempts' might remain. 
+        // In a production app, use a Cloud Function trigger to clean these up.
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting exam:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
