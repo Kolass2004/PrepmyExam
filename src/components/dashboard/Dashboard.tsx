@@ -3,12 +3,13 @@
 import { User } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { LogOut, Loader2, PlayCircle, BarChart2, Plus } from "lucide-react";
+import { LogOut, Loader2, PlayCircle, BarChart2, Plus, Sparkles } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import Link from "next/link";
 import { LogoutModal } from "./LogoutModal";
 import { formatIndianDate } from "@/lib/utils";
+import { UserMenu } from "./UserMenu";
 
 interface DashboardProps {
     user: User;
@@ -25,6 +26,7 @@ import { RenameModal } from "./RenameModal";
 import { Edit2 } from "lucide-react";
 import { ThemeToggle } from "../theme-toggle";
 import { ColorPicker } from "../color-picker";
+import { StackedLogos } from "./StackedLogos";
 
 export function Dashboard({ user }: DashboardProps) {
     const [exams, setExams] = useState<Exam[]>([]);
@@ -92,24 +94,22 @@ export function Dashboard({ user }: DashboardProps) {
 
     return (
         <div ref={containerRef} className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-300">
-            <header className="dash-item flex justify-between items-center mb-12">
-                <div>
-                    <h1 className="text-4xl  text-foreground mb-4">Welcome back, {user.displayName?.split(' ')[0]} !</h1>
-                    <p className="text-5xl font-semibold text-muted-foreground">Ready to continue your preparation?</p>
+            <header className="dash-item flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 relative z-50 gap-4 md:gap-0">
+                <div className="w-full md:w-auto">
+                    <h1 className="text-3xl md:text-4xl text-foreground mb-2 md:mb-4">
+                        Welcome back, <br className="md:hidden" />
+                        {user.displayName?.split(' ')[0]} !
+                    </h1>
+                    <p className="hidden md:block text-5xl font-semibold text-muted-foreground">Ready to continue your preparation?</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end md:self-auto">
                     <ColorPicker />
                     <ThemeToggle />
-                    <button
-                        onClick={() => setShowLogoutModal(true)}
-                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
-                    >
-                        <LogOut className="w-6 h-6" />
-                    </button>
+                    <UserMenu user={user} onLogout={() => setShowLogoutModal(true)} />
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <div className="dash-item bg-primary/10 border-0 p-8 rounded-[2rem] relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <h3 className="text-primary text-sm font-bold uppercase tracking-wider mb-2 relative">Overall Score</h3>
@@ -124,6 +124,17 @@ export function Dashboard({ user }: DashboardProps) {
                 <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm">
                     <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">Total Attempts</h3>
                     <p className="text-5xl font-bold text-foreground">{loading ? "-" : stats.totalAttempts}</p>
+                </div>
+
+                <div className="dash-item h-full">
+                    <Link href="/prompt" className="group relative bg-card border-0 p-8 rounded-[2.5rem] shadow-sm hover:shadow-lg transition-all flex flex-col items-center justify-center gap-6 overflow-hidden h-full w-full">
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity roun" />
+                        <StackedLogos className="w-auto h-12" />
+                        <div className="text-center relative z-10">
+                            <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">Prompt Creator</h3>
+                            <p className="text-xs text-muted-foreground">Generate AI Prompts</p>
+                        </div>
+                    </Link>
                 </div>
             </div>
 

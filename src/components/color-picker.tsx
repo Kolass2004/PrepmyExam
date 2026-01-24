@@ -31,13 +31,13 @@ export function ColorPicker() {
     const setAppColor = (hue: string) => {
         document.documentElement.style.setProperty('--base-hue', hue)
         // Optional: save to local storage so it persists
-        localStorage.setItem('bankexam-theme-hue', hue)
+        localStorage.setItem('bankexam-theme-hue-v2', hue)
         setIsOpen(false)
     }
 
     // Restore color on mount
     React.useEffect(() => {
-        const savedHue = localStorage.getItem('bankexam-theme-hue')
+        const savedHue = localStorage.getItem('bankexam-theme-hue-v2')
         if (savedHue) {
             document.documentElement.style.setProperty('--base-hue', savedHue)
         }

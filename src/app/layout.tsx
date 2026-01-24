@@ -26,9 +26,10 @@ export default function RootLayout({
       <body className={cn(googleSans.className, "min-h-screen bg-background text-foreground antialiased font-sans")}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          storageKey="bankexam-theme"
         >
           <AuthProvider>{children}</AuthProvider>
           <script
@@ -36,7 +37,7 @@ export default function RootLayout({
               __html: `
                 (function() {
                   try {
-                    const savedHue = localStorage.getItem('bankexam-theme-hue-v2');
+                    var savedHue = localStorage.getItem('bankexam-theme-hue-v2') || localStorage.getItem('bankexam-theme-hue');
                     if (savedHue) {
                       document.documentElement.style.setProperty('--base-hue', savedHue);
                     }
