@@ -12,8 +12,8 @@ const googleSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Rexon Bank Exam Prep",
-  description: "Advanced bank exam preparation platform",
+  title: "Examprep - India's Best Exam Preparation Platform",
+  description: "Comprehensive preparation for Banking, SSC, UPSC, Railways, and State PSCs with AI-powered tutoring.",
 };
 
 export default function RootLayout({
@@ -36,7 +36,7 @@ export default function RootLayout({
               __html: `
                 (function() {
                   try {
-                    const savedHue = localStorage.getItem('bankexam-theme-hue');
+                    const savedHue = localStorage.getItem('bankexam-theme-hue-v2');
                     if (savedHue) {
                       document.documentElement.style.setProperty('--base-hue', savedHue);
                     }
