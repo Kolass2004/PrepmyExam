@@ -19,7 +19,14 @@
 - **Public Profile System**: Shareable user profiles (`/user/[uid]`) featuring a **GitHub-style Contribution Graph** to visualize study consistency.
 - **Customizable Themes**: 
     - Full **Dark/Light Mode** support.
+    - Full **Dark/Light Mode** support.
     - **Dynamic Color Themes**: Users can choose their preferred primary color (Violet, Blue, Emerald, Amber, Rose, Slate).
+
+### 🌐 Multilingual Support
+- **6 Supported Languages**: 
+  - English, Hindi (हिन्दी), Tamil (தமிழ்), Malayalam (മലയാളം), Kannada (ಕನ್ನಡ), Telugu (తెలుగు).
+- **Persistent Preferences**: Language, theme, and color settings are saved to your user profile and synced across devices via a secure server-side API.
+- **Instant Switching**: Seamless language transitions without page reloads.
 
 ###  Educational Tools
 - **Upload & Parse**: Support for uploading custom question sets (JSON).
