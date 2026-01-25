@@ -11,14 +11,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     try {
+        // Query attempts without ordering to avoid missing index issues
         const attemptsSnapshot = await adminDb
             .collection("attempts")
             .where("examId", "==", id)
             .where("userId", "==", uid)
-            .orderBy("completedAt", "desc")
             .get();
-        // Fetch Progress (Paused attempt)
-        const progressDoc = await adminDb.collection("progress").doc(`${uid}_${id}`).get();
+
+        // Fetch Progress (Paused attempt) from correct path
+        const progressDoc = await adminDb.collection("users").doc(uid).collection("progress").doc(id).get();
         let pausedAttempt: any = null;
 
         if (progressDoc.exists) {
@@ -28,7 +29,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 score: null,
                 completedAt: progressData?.updatedAt,
                 status: "paused",
-                currentQuestionIndex: progressData?.currentQuestionIndex
+                currentQuestionIndex: progressData?.currentQuestionIndex,
+                skippedCount: 0 // Default for types
             };
         }
 
@@ -36,6 +38,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             id: doc.id,
             ...doc.data()
         }));
+
+        // Sort in memory (descending date)
+        attempts.sort((a, b) => {
+            const dateA = new Date(a.completedAt).getTime();
+            const dateB = new Date(b.completedAt).getTime();
+            return dateB - dateA;
+        });
 
         if (pausedAttempt) {
             attempts.unshift(pausedAttempt);

@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { User } from "firebase/auth";
 import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale } from "lucide-react";
-import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface UserMenuProps {
     user: User;
@@ -14,6 +14,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, onLogout }: UserMenuProps) {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,14 +80,15 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
                             onClick={() => setIsOpen(false)}
                         >
-                            <UserIcon className="w-4 h-4" /> Profile
+                            <UserIcon className="w-4 h-4" /> {t('menu_profile')}
                         </Link>
-                        <button
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors text-left"
-                            onClick={() => setIsOpen(false)} // Placeholder
+                        <Link
+                            href="/settings"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                            onClick={() => setIsOpen(false)}
                         >
-                            <Settings className="w-4 h-4" /> Settings
-                        </button>
+                            <Settings className="w-4 h-4" /> {t('menu_settings')}
+                        </Link>
                         <a
                             href="https://github.com/Kolass2004/Examprep"
                             target="_blank"
@@ -94,7 +96,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
                             onClick={() => setIsOpen(false)}
                         >
-                            <Github className="w-4 h-4" /> Open Source <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
+                            <Github className="w-4 h-4" /> {t('menu_opensource')} <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
                         </a>
                     </div>
 
@@ -104,14 +106,14 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
                             onClick={() => setIsOpen(false)}
                         >
-                            <Shield className="w-4 h-4" /> Privacy Policy
+                            <Shield className="w-4 h-4" /> {t('menu_privacy')}
                         </Link>
                         <Link
                             href="/terms"
                             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
                             onClick={() => setIsOpen(false)}
                         >
-                            <Scale className="w-4 h-4" /> Terms of Service
+                            <Scale className="w-4 h-4" /> {t('menu_terms')}
                         </Link>
                     </div>
 
@@ -123,7 +125,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-500/10 rounded-xl transition-colors text-left"
                         >
-                            <LogOut className="w-4 h-4" /> Logout
+                            <LogOut className="w-4 h-4" /> {t('menu_logout')}
                         </button>
                     </div>
                 </div>

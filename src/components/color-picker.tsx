@@ -28,11 +28,27 @@ export function ColorPicker() {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    const setAppColor = (hue: string) => {
+    const setAppColor = async (hue: string) => {
         document.documentElement.style.setProperty('--base-hue', hue)
-        // Optional: save to local storage so it persists
         localStorage.setItem('bankexam-theme-hue-v2', hue)
         setIsOpen(false)
+
+        try {
+            const { auth } = await import("@/lib/firebase/client");
+
+            if (auth.currentUser) {
+                await fetch('/api/user/preferences', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: auth.currentUser.uid,
+                        preferences: { hue }
+                    })
+                });
+            }
+        } catch (error) {
+            console.error("Failed to save color preference:", error);
+        }
     }
 
     // Restore color on mount

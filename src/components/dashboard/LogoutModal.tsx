@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { LogOut, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface LogoutModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface LogoutModalProps {
 export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (isOpen) {
@@ -55,9 +57,9 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
                         <LogOut className="w-10 h-10 text-destructive" />
                     </div>
 
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Sign Out?</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-2">{t('sign_out_title')}</h3>
                     <p className="text-muted-foreground mb-8 text-lg">
-                        Are you sure you want to end your session? You&apos;ll need to sign in again to access your progress.
+                        {t('sign_out_desc')}
                     </p>
 
                     <div className="flex w-full gap-4">
@@ -65,13 +67,13 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
                             onClick={onClose}
                             className="flex-1 py-4 text-foreground font-medium hover:bg-secondary rounded-xl transition-colors"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
                             className="flex-1 py-4 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium rounded-xl transition-all shadow-lg hover:shadow-xl"
                         >
-                            Yes, Sign Out
+                            {t('confirm_sign_out')}
                         </button>
                     </div>
                 </div>

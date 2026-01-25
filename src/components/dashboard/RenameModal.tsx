@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Save, Loader2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface RenameModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface RenameModalProps {
 export function RenameModal({ isOpen, currentTitle, onClose, onSave }: RenameModalProps) {
     const [title, setTitle] = useState(currentTitle);
     const [loading, setLoading] = useState(false);
+    const { t } = useLanguage();
 
     if (!isOpen) return null;
 
@@ -39,19 +41,19 @@ export function RenameModal({ isOpen, currentTitle, onClose, onSave }: RenameMod
                     <X className="w-5 h-5" />
                 </button>
 
-                <h2 className="text-xl font-semibold text-white mb-6">Rename Exam</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t('rename_exam')}</h2>
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-slate-400 mb-2">
-                            Exam Title
+                            {t('exam_title')}
                         </label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             className="w-full bg-secondary border border-border text-foreground rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
-                            placeholder="Enter exam title"
+                            placeholder={t('enter_exam_title')}
                             required
                         />
                     </div>
@@ -62,7 +64,7 @@ export function RenameModal({ isOpen, currentTitle, onClose, onSave }: RenameMod
                             onClick={onClose}
                             className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             type="submit"
@@ -70,7 +72,7 @@ export function RenameModal({ isOpen, currentTitle, onClose, onSave }: RenameMod
                             className="flex-1 px-4 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                         >
                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                            Save Changes
+                            {t('save_changes')}
                         </button>
                     </div>
                 </form>

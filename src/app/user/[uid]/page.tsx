@@ -8,6 +8,7 @@ import { Loader2, Share2, Calendar, Trophy, ArrowLeft, Copy, ChevronDown, Check 
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface UserProfile {
     uid: string;
@@ -32,6 +33,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
     // Unwrap params using React.use()
     const { uid } = use(params);
     const { user: currentUser } = useAuth();
+    const { t } = useLanguage();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [stats, setStats] = useState<UserStats | null>(null);
@@ -51,7 +53,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
 
     const [selectedYear, setSelectedYear] = useState(currentYear);
     const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
-
 
     useEffect(() => {
         async function fetchData() {
@@ -103,8 +104,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
     if (error || !profile) {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-                <p className="text-muted-foreground">{error || "User not found"}</p>
-                <Link href="/" className="text-primary hover:underline">Go Home</Link>
+                <p className="text-muted-foreground">{error || t('user_not_found')}</p>
+                <Link href="/" className="text-primary hover:underline">{t('go_home')}</Link>
             </div>
         );
     }
@@ -118,7 +119,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                         <div className="p-2 rounded-full bg-secondary group-hover:bg-primary/10 transition-colors">
                             <ArrowLeft className="w-4 h-4" />
                         </div>
-                        <span className="font-medium text-sm">Back to Dashboard</span>
+                        <span className="font-medium text-sm">{t('back_dashboard')}</span>
                     </Link>
                     <div className="flex items-center gap-4">
                         {!currentUser && (
@@ -160,7 +161,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                                 </button>
                             </div>
                             <p className="text-sm text-muted-foreground flex items-center justify-center lg:justify-start gap-2 pt-1">
-                                <Calendar className="w-4 h-4" /> Joined {new Date(profile.createdAt).toLocaleDateString()}
+                                <Calendar className="w-4 h-4" /> {t('joined')} {new Date(profile.createdAt).toLocaleDateString()}
                             </p>
                         </div>
 
@@ -169,7 +170,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors font-medium shadow-sm active:scale-95"
                         >
                             <Share2 className="w-4 h-4" />
-                            {copied ? "Link Copied!" : "Share Profile"}
+                            {copied ? t('link_copied') : t('share_profile')}
                         </button>
                     </div>
 
@@ -178,14 +179,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="p-8 rounded-[2rem] bg-card border border-border shadow-sm flex flex-col justify-center">
-                                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Total Score</p>
+                                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('total_score')}</p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-5xl font-bold">{stats?.overallScore.toFixed(1)}</span>
                                     <span className="text-3xl text-muted-foreground">%</span>
                                 </div>
                             </div>
                             <div className="p-8 rounded-[2rem] bg-card border border-border shadow-sm flex flex-col justify-center">
-                                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Exams Taken</p>
+                                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('exams_taken')}</p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-5xl font-bold">{stats?.totalAttempts}</span>
                                     <Trophy className="w-8 h-8 text-yellow-500" />
@@ -197,7 +198,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-bold flex items-center gap-2">
-                                    Study Consistency
+                                    {t('study_consistency')}
                                 </h2>
 
                                 {/* Year Dropdown */}
@@ -353,10 +354,10 @@ function ActivityMap({ activity, year }: { activity: ActivityDay[], year: number
                                 key={dateStr}
                                 title={`${item.date.toDateString()}: ${level} exams`}
                                 className={`w-3 h-3 rounded-sm transition-colors ${level === 0 ? "bg-secondary/80 hover:bg-secondary" :
-                                        level === 1 ? "bg-primary/30" :
-                                            level === 2 ? "bg-primary/50" :
-                                                level === 3 ? "bg-primary/70" :
-                                                    "bg-primary"
+                                    level === 1 ? "bg-primary/30" :
+                                        level === 2 ? "bg-primary/50" :
+                                            level === 3 ? "bg-primary/70" :
+                                                "bg-primary"
                                     }`}
                             />
                         );

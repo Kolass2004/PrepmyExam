@@ -16,9 +16,31 @@ export function ThemeToggle() {
         return <div className="w-10 h-10" /> // Placeholder
     }
 
+    const toggleTheme = async () => {
+        const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+
+        try {
+            const { auth } = await import("@/lib/firebase/client");
+
+            if (auth.currentUser) {
+                await fetch('/api/user/preferences', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: auth.currentUser.uid,
+                        preferences: { theme: newTheme }
+                    })
+                });
+            }
+        } catch (error) {
+            console.error("Failed to save theme preference:", error);
+        }
+    };
+
     return (
         <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-secondary/80 transition-colors"
             title={resolvedTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format, subMonths, subYears, startOfYear } from "date-fns";
 import { StackedLogos } from "@/components/dashboard/StackedLogos";
+import { LanguageSwitcher } from "@/components/language/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function PromptPage() {
     // Inputs
@@ -22,6 +24,7 @@ export default function PromptPage() {
     const [showAiLinks, setShowAiLinks] = useState(false);
 
     const [copied, setCopied] = useState(false);
+    const { t } = useLanguage();
 
     const tools = [
         { name: "ChatGPT", url: "https://chat.openai.com", logo: "/ailogo/openai.svg" },
@@ -123,14 +126,15 @@ export default function PromptPage() {
                             <Link href="/" className="p-2 hover:bg-secondary rounded-full transition-colors group">
                                 <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                             </Link>
-                            <h1 className="font-bold text-lg text-foreground">Prompt Creator</h1>
+                            <h1 className="font-bold text-lg text-foreground">{t('create_exams')}</h1>
                         </div>
+                        <LanguageSwitcher />
                         <ThemeToggle />
                     </div>
 
                     {/* Exam Selection */}
                     <div className="space-y-4">
-                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">Target Exam</label>
+                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('target_exam')}</label>
                         <div className="relative group">
                             <select
                                 value={exam}
@@ -145,7 +149,7 @@ export default function PromptPage() {
 
                     {/* Subject Selection */}
                     <div className="space-y-4">
-                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">Subject</label>
+                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('subject')}</label>
                         <div className="grid grid-cols-2 gap-3">
                             {subjects.map(sub => (
                                 <button
@@ -173,7 +177,7 @@ export default function PromptPage() {
                     {/* Conditional: Duration */}
                     {subject === "Current Affairs" && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">Timeframe</label>
+                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('timeframe')}</label>
 
                             {/* Quick Access Presets */}
                             <div className="flex gap-2 flex-wrap">
@@ -181,7 +185,7 @@ export default function PromptPage() {
                                     { label: "Last 3 Months", val: "3M" },
                                     { label: "Last 6 Months", val: "6M" },
                                     { label: "Last Year", val: "1Y" },
-                                    { label: "CUSTOM", val: "CUSTOM" }
+                                    { label: t('custom'), val: "CUSTOM" }
                                 ].map((p) => (
                                     <button
                                         key={p.val}
@@ -201,7 +205,7 @@ export default function PromptPage() {
                             {showCustomDates && (
                                 <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="space-y-2">
-                                        <label className="text-xs text-muted-foreground font-medium ml-1">Start Date</label>
+                                        <label className="text-xs text-muted-foreground font-medium ml-1">{t('start_date')}</label>
                                         <input
                                             type="date"
                                             value={startDate}
@@ -210,7 +214,7 @@ export default function PromptPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs text-muted-foreground font-medium ml-1">End Date</label>
+                                        <label className="text-xs text-muted-foreground font-medium ml-1">{t('end_date')}</label>
                                         <input
                                             type="date"
                                             value={endDate}
@@ -226,7 +230,7 @@ export default function PromptPage() {
                     {/* Question Count */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">Questions</label>
+                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('questions_count')}</label>
                             <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm min-w-[3rem] text-center">{count}</span>
                         </div>
                         <input
@@ -254,7 +258,7 @@ export default function PromptPage() {
                         {/* Header or AI Links */}
                         {showAiLinks ? (
                             <div className="flex items-center gap-4 bg-background/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-border animate-in fade-in slide-in-from-top-4 duration-300 w-fit">
-                                <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Open With:</span>
+                                <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('open_with')}</span>
                                 <div className="flex items-center gap-3">
                                     {tools.map(t => (
                                         <a key={t.name} href={t.url} target="_blank" rel="noopener noreferrer" className="relative group transition-transform hover:scale-110" title={t.name}>
@@ -268,7 +272,7 @@ export default function PromptPage() {
                         ) : (
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Prompt Preview</label>
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('prompt_preview')}</label>
                             </div>
                         )}
 
@@ -282,7 +286,7 @@ export default function PromptPage() {
                             )}
                         >
                             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            {copied ? "Copied" : "Copy Prompt"}
+                            {copied ? t('copied') : t('copy_prompt')}
                         </button>
                     </div>
 

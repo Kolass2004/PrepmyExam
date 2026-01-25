@@ -12,6 +12,7 @@ import { PauseModal } from "./PauseModal";
 import { SubmitModal } from "./SubmitModal";
 import { ExitModal } from "./ExitModal";
 import { AISidebar } from "./AISidebar";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ExamContainerProps {
     examId: string;
@@ -20,6 +21,7 @@ interface ExamContainerProps {
 export function ExamContainer({ examId }: ExamContainerProps) {
     const { user } = useAuth();
     const router = useRouter();
+    const { t } = useLanguage();
 
     const [exam, setExam] = useState<any>(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -54,8 +56,16 @@ export function ExamContainer({ examId }: ExamContainerProps) {
 
                     if (progressSnap.exists()) {
                         const progData = progressSnap.data();
-                        setAnswers(progData.answers || {});
-                        setCurrentQuestionIndex(progData.currentQuestionIndex || 0);
+                        const savedAnswers = progData.answers || {};
+                        let savedIndex = progData.currentQuestionIndex || 0;
+
+                        // If the saved index is already answered, and it's not the last question, move to next
+                        if (savedAnswers[savedIndex] && savedIndex < examData.questions.length - 1) {
+                            savedIndex++;
+                        }
+
+                        setAnswers(savedAnswers);
+                        setCurrentQuestionIndex(savedIndex);
                     }
                 }
             } catch (err) {
@@ -179,9 +189,16 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                 })
             });
 
-            // Clear progress
-            // Actually, we might want to keep it or delete it. Let's delete it or just ignore it next time.
-            // For now, I won't explicitly delete, but logic could be added.
+            // Clear progress after successful submission
+            try {
+                await fetch(`/api/exam/${examId}/progress`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.uid })
+                });
+            } catch (err) {
+                console.error("Failed to cleanup progress:", err);
+            }
         }
 
         router.push(`/exam-dashboard/${examId}`);
@@ -191,7 +208,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
         return (
             <div className="flex h-screen items-center justify-center bg-background">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <span className="ml-3 text-white">Saving...</span>
+                <span className="ml-3 text-white">{t('loading')}</span>
             </div>
         );
     }
@@ -202,7 +219,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
             <header className="h-20 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-6 md:px-12 sticky top-0 z-50 shadow-sm elevation-1">
                 <div className="flex items-center gap-4">
                     <div className="text-foreground font-bold text-lg">
-                        Question {currentQuestionIndex + 1} <span className="text-muted-foreground font-normal">/ {exam.questions.length}</span>
+                        {t('question_idx')} {currentQuestionIndex + 1} <span className="text-muted-foreground font-normal">/ {exam.questions.length}</span>
                     </div>
                 </div>
 
@@ -211,7 +228,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                         onClick={() => setIsAISidebarOpen(true)}
                         className="px-4 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
                     >
-                        <Sparkles className="w-4 h-4" /> <span className="hidden md:inline">Ask AI</span>
+                        <Sparkles className="w-4 h-4" /> <span className="hidden md:inline">{t('ask_ai')}</span>
                     </button>
 
                     {Object.keys(answers).length === 0 ? (
@@ -219,14 +236,14 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                             onClick={() => setShowExitModal(true)}
                             className="px-6 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 border border-transparent rounded-full text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
                         >
-                            <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">Exit</span>
+                            <ArrowLeft className="w-4 h-4" /> <span className="hidden md:inline">{t('exit')}</span>
                         </button>
                     ) : (
                         <button
                             onClick={() => setShowPauseModal(true)}
                             className="px-6 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground border border-transparent hover:border-border rounded-full text-sm font-medium transition-all flex items-center gap-2"
                         >
-                            <Pause className="w-4 h-4" /> <span className="hidden md:inline">Pause Exam</span>
+                            <Pause className="w-4 h-4" /> <span className="hidden md:inline">{t('pause')}</span>
                         </button>
                     )}
                 </div>
@@ -258,7 +275,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                         disabled={currentQuestionIndex === 0}
                         className="px-8 py-3.5 rounded-full border border-border text-foreground disabled:opacity-30 hover:bg-secondary transition-all flex items-center gap-2 font-medium"
                     >
-                        <ArrowLeft className="w-5 h-5" /> Previous
+                        <ArrowLeft className="w-5 h-5" /> {t('previous')}
                     </button>
                     {currentQuestionIndex === exam.questions.length - 1 ? (
                         Object.keys(answers).length === 0 ? (
@@ -266,22 +283,23 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                                 onClick={() => setShowExitModal(true)}
                                 className="px-8 py-3.5 rounded-full bg-secondary text-foreground hover:bg-secondary/80 border border-border shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-bold text-lg"
                             >
-                                Close Exam <ArrowRight className="w-5 h-5" />
+                                {t('close_exam')} <ArrowRight className="w-5 h-5" />
                             </button>
                         ) : (
                             <button
                                 onClick={handleSubmitClick}
                                 className="px-8 py-3.5 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-bold text-lg"
                             >
-                                Submit Exam <ArrowRight className="w-5 h-5" />
+                                {t('submit_exam')} <ArrowRight className="w-5 h-5" />
                             </button>
                         )
                     ) : (
                         <button
                             onClick={handleSkip}
-                            className="px-8 py-3.5 rounded-full bg-secondary text-foreground hover:bg-secondary/80 transition-all flex items-center gap-2 font-medium text-lg border border-border"
+                            disabled={showingFeedback}
+                            className="px-8 py-3.5 rounded-full bg-secondary text-foreground hover:bg-secondary/80 transition-all flex items-center gap-2 font-medium text-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Skip <ArrowRight className="w-5 h-5" />
+                            {t('skip')} <ArrowRight className="w-5 h-5" />
                         </button>
                     )}
                 </footer>

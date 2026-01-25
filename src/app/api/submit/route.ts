@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
         // Simple aggregation: get all attempts and avg (expensive) or increment.
         // Let's just store the attempt. The dashboard can calculate or we can store a running avg.
 
-        // Delete progress
-        await adminDb.collection("progress").doc(`${userId}_${examId}`).delete();
+        // Delete progress (cleanup)
+        await adminDb.collection("users").doc(userId).collection("progress").doc(examId).delete();
 
         return NextResponse.json({ success: true, attemptId: attemptRef.id });
     } catch (error) {

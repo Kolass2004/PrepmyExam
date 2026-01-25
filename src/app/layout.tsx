@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   description: "Comprehensive preparation for Banking, SSC, UPSC, Railways, and State PSCs with AI-powered tutoring.",
 };
 
+import { LanguageProvider } from "@/context/LanguageContext";
+import { PreferencesSync } from "@/components/PreferencesSync";
+
+// ... existing imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +36,12 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="bankexam-theme"
         >
-          <AuthProvider>{children}</AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <PreferencesSync />
+              {children}
+            </AuthProvider>
+          </LanguageProvider>
           <script
             dangerouslySetInnerHTML={{
               __html: `

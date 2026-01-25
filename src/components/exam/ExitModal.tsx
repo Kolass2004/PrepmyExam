@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { LogOut, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ExitModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface ExitModalProps {
 export function ExitModal({ isOpen, onClose, onConfirm }: ExitModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (isOpen) {
@@ -55,9 +57,9 @@ export function ExitModal({ isOpen, onClose, onConfirm }: ExitModalProps) {
                         <LogOut className="w-10 h-10 text-destructive" />
                     </div>
 
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Exit Exam?</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-2">{t('exit_exam')}</h3>
                     <p className="text-muted-foreground mb-8 text-lg">
-                        You haven't answered any questions yet. Progress will not be saved.
+                        {t('exit_warning')}
                     </p>
 
                     <div className="flex w-full gap-4">
@@ -65,13 +67,13 @@ export function ExitModal({ isOpen, onClose, onConfirm }: ExitModalProps) {
                             onClick={onClose}
                             className="flex-1 py-4 text-foreground font-medium hover:bg-secondary rounded-xl transition-colors"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
                             className="flex-1 py-4 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium rounded-xl transition-all shadow-lg hover:shadow-xl"
                         >
-                            Exit
+                            {t('exit')}
                         </button>
                     </div>
                 </div>

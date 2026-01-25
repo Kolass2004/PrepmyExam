@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { Pause, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface PauseModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface PauseModalProps {
 export function PauseModal({ isOpen, onClose, onConfirm }: PauseModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (isOpen) {
@@ -55,9 +57,9 @@ export function PauseModal({ isOpen, onClose, onConfirm }: PauseModalProps) {
                         <Pause className="w-10 h-10 text-amber-600 dark:text-amber-500" />
                     </div>
 
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Pause Exam?</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-2">{t('pause_exam')}</h3>
                     <p className="text-muted-foreground mb-8 text-lg">
-                        Your progress will be saved. You can resume this exam later from the dashboard.
+                        {t('pause_desc')}
                     </p>
 
                     <div className="flex w-full gap-4">
@@ -65,13 +67,13 @@ export function PauseModal({ isOpen, onClose, onConfirm }: PauseModalProps) {
                             onClick={onClose}
                             className="flex-1 py-4 text-foreground font-medium hover:bg-secondary rounded-xl transition-colors"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
                             className="flex-1 py-4 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-xl"
                         >
-                            Pause & Exit
+                            {t('pause_exit')}
                         </button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { Trash2, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface DeleteExamModalProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ interface DeleteExamModalProps {
 export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm }: DeleteExamModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (isOpen) {
@@ -56,9 +58,9 @@ export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm }: Delet
                         <Trash2 className="w-10 h-10 text-red-600 dark:text-red-500" />
                     </div>
 
-                    <h3 className="text-2xl font-bold text-foreground mb-2">Delete Exam?</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-2">{t('delete_exam')}</h3>
                     <p className="text-muted-foreground mb-8 text-lg">
-                        Are you sure you want to delete <span className="font-semibold text-foreground">"{examTitle}"</span>? This action cannot be undone.
+                        {t('delete_confirm_desc').replace('{examName}', examTitle)}
                     </p>
 
                     <div className="flex w-full gap-4">
@@ -66,13 +68,13 @@ export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm }: Delet
                             onClick={onClose}
                             className="flex-1 py-4 text-foreground bg-secondary font-medium hover:bg-primary rounded-xl transition-colors"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
                             className="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-xl"
                         >
-                            Delete
+                            {t('delete')}
                         </button>
                     </div>
                 </div>

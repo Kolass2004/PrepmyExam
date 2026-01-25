@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { useLayoutEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface UploadPageProps {
     onUploadSuccess: () => void;
@@ -15,6 +16,7 @@ interface UploadPageProps {
 
 export function UploadPage({ onUploadSuccess }: UploadPageProps) {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [mode, setMode] = useState<"upload" | "input">("input");
     const [jsonContent, setJsonContent] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -100,15 +102,15 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                 href="/"
                 className="absolute top-6 left-6 md:top-12 md:left-12 inline-flex items-center gap-2 text-muted-foreground text-primary transition-colors px-4 py-2 bg-secondary rounded-full font-medium"
             >
-                <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+                <ArrowLeft className="w-4 h-4" /> {t('back_dashboard')}
             </Link>
 
             <div className="anim-item w-full max-w-2xl text-center mb-10 mt-12 md:mt-0">
                 <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4 tracking-tight">
-                    Welcome to PrepmyExam
+                    {t('upload_welcome')}
                 </h2>
                 <p className="text-muted-foreground text-lg">
-                    To get started, please upload your question set or paste the JSON content directly.
+                    {t('upload_desc')}
                 </p>
             </div>
 
@@ -121,7 +123,7 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                             mode === "upload" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-muted"
                         )}
                     >
-                        Upload File
+                        {t('tab_upload_file')}
                     </button>
                     <button
                         onClick={() => setMode("input")}
@@ -130,7 +132,7 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                             mode === "input" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-muted"
                         )}
                     >
-                        JSON Input
+                        {t('tab_json_input')}
                     </button>
                 </div>
 
@@ -155,10 +157,10 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                             )}
 
                             <p className="text-lg font-medium text-foreground">
-                                {jsonContent ? "File loaded successfully!" : "Drop your JSON file here"}
+                                {jsonContent ? "File loaded successfully!" : t('drop_file')}
                             </p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                {jsonContent ? "You can verify the content in the input tab" : "or click to browse"}
+                                {jsonContent ? "You can verify the content in the input tab" : t('browse_file')}
                             </p>
                         </div>
                     ) : (
@@ -184,10 +186,10 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                             className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isLoading ? (
-                                "Processing..."
+                                t('processing')
                             ) : (
                                 <>
-                                    Continue <CheckCircle2 className="w-4 h-4" />
+                                    {t('continue')} <CheckCircle2 className="w-4 h-4" />
                                 </>
                             )}
                         </button>
