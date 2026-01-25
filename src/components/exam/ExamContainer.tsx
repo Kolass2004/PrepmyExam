@@ -214,9 +214,9 @@ export function ExamContainer({ examId }: ExamContainerProps) {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col transition-colors duration-500 overflow-hidden relative">
+        <div className="h-[100dvh] bg-background flex flex-col transition-colors duration-500 overflow-hidden relative">
             {/* Header */}
-            <header className="h-20 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-6 md:px-12 sticky top-0 z-50 shadow-sm elevation-1">
+            <header className="h-20 shrink-0 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-6 md:px-12 sticky top-0 z-50 shadow-sm elevation-1">
                 <div className="flex items-center gap-4">
                     <div className="text-foreground font-bold text-lg">
                         {t('question_idx')} {currentQuestionIndex + 1} <span className="text-muted-foreground font-normal">/ {exam.questions.length}</span>
@@ -250,7 +250,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
             </header>
 
             {/* Main Content Wrapper for Sidebar Shift */}
-            <div className={`flex flex-col flex-1 transition-transform duration-500 ease-in-out ${isAISidebarOpen ? "md:mr-[450px]" : ""}`}>
+            <div className={`flex flex-col flex-1 min-h-0 transition-transform duration-500 ease-in-out ${isAISidebarOpen ? "md:mr-[450px]" : ""}`}>
                 <main className="flex-1 flex flex-col justify-center p-6 md:p-12 overflow-y-auto w-full max-w-5xl mx-auto">
                     {currentQuestion && (
                         <QuestionCard
@@ -269,7 +269,7 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                 </main>
 
                 {/* Footer Navigation */}
-                <footer className="h-24 border-t border-border bg-card/80 backdrop-blur-md flex items-center justify-center gap-6 px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] elevation-2">
+                <footer className="h-24 shrink-0 border-t border-border bg-card/80 backdrop-blur-md flex items-center justify-center gap-6 px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] elevation-2">
                     <button
                         onClick={handlePrev}
                         disabled={currentQuestionIndex === 0}

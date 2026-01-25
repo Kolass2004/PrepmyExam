@@ -79,10 +79,23 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
         fetchData();
     }, [uid]);
 
-    const handleShare = () => {
-        navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${profile?.displayName}'s Profile`,
+                    text: `Check out ${profile?.displayName}'s progress!`,
+                    url: window.location.href,
+                });
+            } catch (err) {
+                // User cancelled or error
+                console.log('Share cancelled', err);
+            }
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     const handleCopyUid = () => {
