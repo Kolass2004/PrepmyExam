@@ -28,11 +28,13 @@ import { Edit2 } from "lucide-react";
 import { ThemeToggle } from "../theme-toggle";
 import { ColorPicker } from "../color-picker";
 import { StackedLogos } from "./StackedLogos";
+import { TermsModal } from "./TermsModal";
 
 export function Dashboard({ user }: DashboardProps) {
     const [exams, setExams] = useState<Exam[]>([]);
     const [loading, setLoading] = useState(true);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
 
     // Rename & Delete State
     const [editingExam, setEditingExam] = useState<Exam | null>(null);
@@ -107,6 +109,39 @@ export function Dashboard({ user }: DashboardProps) {
         }
         fetchData();
     }, [user.uid]);
+
+    // Check Terms Acceptance
+    useEffect(() => {
+        async function checkTerms() {
+            try {
+                const res = await fetch(`/api/user/terms?uid=${user.uid}`);
+                const data = await res.json();
+                if (data.hasAcceptedTerms === false) {
+                    setShowTermsModal(true);
+                }
+            } catch (error) {
+                console.error("Failed to check terms status:", error);
+            }
+        }
+        checkTerms();
+    }, [user.uid]);
+
+    const handleAcceptTerms = async () => {
+        try {
+            const res = await fetch("/api/user/terms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid: user.uid }),
+            });
+
+            if (res.ok) {
+                setShowTermsModal(false);
+                // Optional: Show success toast
+            }
+        } catch (error) {
+            console.error("Failed to accept terms:", error);
+        }
+    };
 
     useEffect(() => {
         if (!loading && containerRef.current) {
@@ -284,6 +319,11 @@ export function Dashboard({ user }: DashboardProps) {
                     localStorage.clear();
                     auth.signOut();
                 }}
+            />
+
+            <TermsModal
+                isOpen={showTermsModal}
+                onAccept={handleAcceptTerms}
             />
         </div>
     );

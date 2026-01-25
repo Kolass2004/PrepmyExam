@@ -12,7 +12,7 @@ const googleSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Examprep - India's Best Exam Preparation Platform",
+  title: "PrepmyExam - India's Best Exam Preparation Platform",
   description: "Comprehensive preparation for Banking, SSC, UPSC, Railways, and State PSCs with AI-powered tutoring.",
 };
 

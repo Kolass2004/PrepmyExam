@@ -22,7 +22,7 @@ export default function AboutPage() {
 
             <main className="pt-32 pb-20 px-6 max-w-4xl mx-auto">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">About <span className="text-primary">Examprep</span></h1>
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">About <span className="text-primary">PrepmyExam</span></h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         We are on a mission to democratize competitive exam preparation in India through technology and innovation.
                     </p>
@@ -57,7 +57,7 @@ export default function AboutPage() {
                             </div>
                             <h2 className="text-3xl md:text-5xl font-bold mb-6">Built with Transparency</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                                We believe in the power of community. Examprep is an open-source project, and we welcome contributions from developers worldwide.
+                                We believe in the power of community. PrepmyExam is an open-source project, and we welcome contributions from developers worldwide.
                             </p>
                         </div>
                         <CommitHistory />

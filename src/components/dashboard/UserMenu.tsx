@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { User } from "firebase/auth";
-import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink } from "lucide-react";
+import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -96,6 +96,23 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                         >
                             <Github className="w-4 h-4" /> Open Source <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
                         </a>
+                    </div>
+
+                    <div className="border-t border-border/50 mt-1 p-1 space-y-0.5">
+                        <Link
+                            href="/privacy"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <Shield className="w-4 h-4" /> Privacy Policy
+                        </Link>
+                        <Link
+                            href="/terms"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <Scale className="w-4 h-4" /> Terms of Service
+                        </Link>
                     </div>
 
                     <div className="border-t border-border/50 mt-1 p-1">

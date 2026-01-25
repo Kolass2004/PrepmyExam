@@ -105,7 +105,7 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
 
             <div className="anim-item w-full max-w-2xl text-center mb-10 mt-12 md:mt-0">
                 <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4 tracking-tight">
-                    Welcome to Bank Exam Prep
+                    Welcome to PrepmyExam
                 </h2>
                 <p className="text-muted-foreground text-lg">
                     To get started, please upload your question set or paste the JSON content directly.

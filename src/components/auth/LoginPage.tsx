@@ -181,7 +181,7 @@ export function LoginPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center reveal-section">
                         <div>
-                            <h2 className="text-3xl md:text-5xl font-bold mb-6">Why Choose Examprep?</h2>
+                            <h2 className="text-3xl md:text-5xl font-bold mb-6">Why Choose PrepmyExam?</h2>
                             <p className="text-lg text-muted-foreground mb-8">
                                 We combine cutting-edge technology with expert-curated content to give you the competitive edge.
                             </p>
