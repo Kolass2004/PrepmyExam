@@ -11,20 +11,27 @@ import remarkGfm from "remark-gfm";
 // We need to fetch the attempt AND the original exam questions.
 // Ideally the attempt stores snapshot of answers, and we combine with exam.
 
+import { useLanguage } from "@/context/LanguageContext";
+
+// ... imports
+
 export default function ExamReviewPage() {
-    const { attemptId } = useParams(); // Need to adjust route to be /exam-review/[attemptId]
-    const { user } = useAuth();
+    const { attemptId } = useParams();
+    const { user, loading: authLoading } = useAuth();
+    const { t } = useLanguage();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!user || !attemptId) return;
+        if (authLoading) return;
+        if (!user || !attemptId) {
+            setLoading(false);
+            return;
+        }
+
         async function load() {
             try {
-                // Fetch attempt details (which should include examId)
-                // Then fetch exam details.
-                // Or create a specific API returning full review data.
-                const res = await fetch(`/api/attempt/${attemptId}`); // Need to create this API
+                const res = await fetch(`/api/attempt/${attemptId}`);
                 const json = await res.json();
                 setData(json);
             } catch (e) {
@@ -34,24 +41,35 @@ export default function ExamReviewPage() {
             }
         }
         load();
-    }, [attemptId, user]);
+    }, [attemptId, user, authLoading]);
 
-    if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-white" /></div>;
-    if (!data) return <div className="text-white text-center p-10">Attempt not found</div>;
+    if (authLoading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>;
 
-    if (data?.error || !data?.exam) return <div className="text-white text-center p-10">Error: {data?.error || "Exam data missing"}</div>;
+    if (!user) {
+        return (
+            <div className="flex flex-col h-screen items-center justify-center gap-4">
+                <p className="text-foreground">Please log in to view this attempt.</p>
+                <Link href="/auth" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg">Login</Link>
+            </div>
+        );
+    }
+
+    if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>;
+    if (!data) return <div className="text-foreground text-center p-10">Attempt not found</div>;
+
+    if (data?.error || !data?.exam) return <div className="text-destructive text-center p-10">Error: {data?.error || "Exam data missing"}</div>;
 
     const { attempt, exam } = data;
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
-            <Link href={`/exam-dashboard/${exam.id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors px-4 py-2 hover:bg-secondary rounded-full">
-                <ArrowLeft className="w-4 h-4" /> Back to Exam Dashboard
+            <Link href={`/exam-dashboard/${exam.id}`} className="inline-flex items-center gap-2 text-muted-foreground text-primary mb-8 transition-colors px-4 py-2 bg-secondary rounded-full">
+                <ArrowLeft className="w-4 h-4" /> {t('back_dashboard')}
             </Link>
 
             <header className="mb-12">
-                <h1 className="text-4xl font-bold text-foreground mb-2 tracking-tight">Review: {exam.title}</h1>
-                <p className="text-muted-foreground text-lg">Score: {attempt.score.toFixed(1)}% • {new Date(attempt.completedAt).toLocaleDateString()}</p>
+                <h1 className="text-4xl font-bold text-foreground mb-2 tracking-tight">{t('review_title')} {exam.title}</h1>
+                <p className="text-muted-foreground text-lg">{t('score')} {attempt.score.toFixed(1)}% • {new Date(attempt.completedAt).toLocaleDateString()}</p>
             </header>
 
             <div className="space-y-8 max-w-4xl mx-auto">
@@ -73,9 +91,9 @@ export default function ExamReviewPage() {
                             </div>
 
                             <div className="pl-14 space-y-3">
-                                <p className="text-base text-muted-foreground">Your Answer: <span className={isCorrect ? "text-green-600 dark:text-green-400 font-bold text-lg ml-2" : "text-red-600 dark:text-red-400 font-bold text-lg ml-2"}>{q.options[userAnswer] || "Skipped"}</span></p>
+                                <p className="text-base text-muted-foreground">{t('your_answer')} <span className={isCorrect ? "text-green-600 dark:text-green-400 font-bold text-lg ml-2" : "text-red-600 dark:text-red-400 font-bold text-lg ml-2"}>{q.options[userAnswer] || t('skipped')}</span></p>
                                 {!isCorrect && (
-                                    <p className="text-base text-muted-foreground">Correct Answer: <span className="text-green-600 dark:text-green-400 font-bold text-lg ml-2">{q.options[correctVal]}</span></p>
+                                    <p className="text-base text-muted-foreground">{t('correct_answer')} <span className="text-green-600 dark:text-green-400 font-bold text-lg ml-2">{q.options[correctVal]}</span></p>
                                 )}
                             </div>
                         </div>

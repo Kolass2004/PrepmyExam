@@ -5,12 +5,12 @@ import { Palette, Check } from "lucide-react"
 import { useTheme } from "next-themes"
 
 const THEME_COLORS = [
-    { name: "Violet", hue: "262", color: "bg-violet-500" },
-    { name: "Blue", hue: "217", color: "bg-blue-500" },
-    { name: "Emerald", hue: "142", color: "bg-emerald-500" },
-    { name: "Amber", hue: "38", color: "bg-amber-500" },
-    { name: "Rose", hue: "340", color: "bg-rose-500" },
-    { name: "Slate", hue: "215", color: "bg-slate-500" },
+    { name: "Violet", hue: "262", saturation: "83%", color: "bg-violet-500" },
+    { name: "Blue", hue: "217", saturation: "91%", color: "bg-blue-500" },
+    { name: "Emerald", hue: "142", saturation: "76%", color: "bg-emerald-500" },
+    { name: "Amber", hue: "38", saturation: "92%", color: "bg-amber-500" },
+    { name: "Rose", hue: "340", saturation: "82%", color: "bg-rose-500" },
+    { name: "Slate", hue: "215", saturation: "16%", color: "bg-slate-500" },
 ]
 
 export function ColorPicker() {
@@ -28,9 +28,11 @@ export function ColorPicker() {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    const setAppColor = async (hue: string) => {
+    const setAppColor = async (hue: string, saturation: string) => {
         document.documentElement.style.setProperty('--base-hue', hue)
+        document.documentElement.style.setProperty('--base-sat', saturation)
         localStorage.setItem('bankexam-theme-hue-v2', hue)
+        localStorage.setItem('bankexam-theme-sat-v2', saturation)
         setIsOpen(false)
 
         try {
@@ -42,7 +44,7 @@ export function ColorPicker() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         uid: auth.currentUser.uid,
-                        preferences: { hue }
+                        preferences: { hue, saturation }
                     })
                 });
             }
@@ -54,8 +56,12 @@ export function ColorPicker() {
     // Restore color on mount
     React.useEffect(() => {
         const savedHue = localStorage.getItem('bankexam-theme-hue-v2')
+        const savedSat = localStorage.getItem('bankexam-theme-sat-v2')
         if (savedHue) {
             document.documentElement.style.setProperty('--base-hue', savedHue)
+        }
+        if (savedSat) {
+            document.documentElement.style.setProperty('--base-sat', savedSat)
         }
     }, [])
 
@@ -63,7 +69,7 @@ export function ColorPicker() {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded-full transition-colors duration-300"
+                className="p-2 text-muted-foreground hover:text-primary bg-muted rounded-full transition-colors duration-300"
                 title="Change App Color"
             >
                 <Palette className="w-6 h-6" />
@@ -74,7 +80,7 @@ export function ColorPicker() {
                     {THEME_COLORS.map((theme) => (
                         <button
                             key={theme.name}
-                            onClick={() => setAppColor(theme.hue)}
+                            onClick={() => setAppColor(theme.hue, theme.saturation)}
                             className={`w-8 h-8 rounded-full ${theme.color} hover:scale-110 transition-transform flex items-center justify-center ring-2 ring-transparent hover:ring-offset-2 hover:ring-offset-popover hover:ring-primary/50`}
                             title={theme.name}
                         />

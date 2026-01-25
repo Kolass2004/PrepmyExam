@@ -33,7 +33,7 @@ export function LanguageSwitcher() {
         <div className="relative" ref={menuRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+                className="p-2 text-muted-foreground hover:text-primary bg-muted rounded-full transition-colors duration-300"
                 title="Change Language"
             >
                 <Languages className="w-5 h-5" />

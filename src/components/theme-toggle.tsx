@@ -41,13 +41,13 @@ export function ThemeToggle() {
     return (
         <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-secondary/80 transition-colors"
+            className="p-2 text-muted-foreground hover:text-primary bg-muted rounded-full transition-colors duration-300"
             title={resolvedTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
             {resolvedTheme === "dark" ? (
                 <Sun className="w-6 h-6 text-primary fill-current transition-all" />
             ) : (
-                <Moon className="w-6 h-6 text-primary fill-current transition-all" />
+                <Moon className="w-6 h-6 fill-current transition-all" />
             )}
             <span className="sr-only">Toggle theme</span>
         </button>

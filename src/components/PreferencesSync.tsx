@@ -36,6 +36,11 @@ export function PreferencesSync() {
                             document.documentElement.style.setProperty('--base-hue', prefs.hue);
                             localStorage.setItem('bankexam-theme-hue-v2', prefs.hue);
                         }
+
+                        if (prefs.saturation) {
+                            document.documentElement.style.setProperty('--base-sat', prefs.saturation);
+                            localStorage.setItem('bankexam-theme-sat-v2', prefs.saturation);
+                        }
                     }
                 }
             } catch (error) {

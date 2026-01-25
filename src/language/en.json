@@ -110,5 +110,13 @@
     "browse_file": "or click to browse",
     "paste_json": "Paste your JSON here",
     "continue": "Continue",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "submit_exam_question": "Submit Exam?",
+    "submit_exam_confirm_desc": "Are you sure you want to finalize your answers? You won't be able to change them after submitting.",
+    "yes_submit": "Yes, Submit",
+    "review_title": "Review:",
+    "score": "Score:",
+    "your_answer": "Your Answer:",
+    "correct_answer": "Correct Answer:",
+    "skipped": "Skipped"
 }
