@@ -34,6 +34,16 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                 ease: "power2.out"
             });
         }, containerRef);
+
+        // Check for pending paste
+        const pending = localStorage.getItem("pendingExamUpload");
+        if (pending) {
+            setJsonContent(pending);
+            setMode("input");
+            localStorage.removeItem("pendingExamUpload");
+            // Optional: You could show a small toast here
+        }
+
         return () => ctx.revert();
     }, []);
 

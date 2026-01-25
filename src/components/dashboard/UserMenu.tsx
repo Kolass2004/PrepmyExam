@@ -122,6 +122,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             onClick={() => {
                                 setIsOpen(false);
                                 onLogout();
+                                
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-500/10 rounded-xl transition-colors text-left"
                         >

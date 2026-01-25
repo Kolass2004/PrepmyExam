@@ -1,20 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { ArrowLeft, Copy, Check, Sparkles, Calendar, BookOpen, Hash, School, GraduationCap, Monitor, Globe } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Copy, Check, Sparkles, Calendar, BookOpen, Hash, School, GraduationCap, Monitor, Globe, FileJson, Layers } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format, subMonths, subYears, startOfYear } from "date-fns";
-import { StackedLogos } from "@/components/dashboard/StackedLogos";
-import { LanguageSwitcher } from "@/components/language/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { useRouter } from "next/navigation";
+
+// Exam Definitions for Mock Tests
+const examDefinitions: Record<string, { defaultCount: number; subjects: string[] }> = {
+    "Bank PO": { defaultCount: 100, subjects: ["Reasoning", "Quantitative Aptitude", "English", "General Awareness", "Computer"] },
+    "SBI Clerk": { defaultCount: 100, subjects: ["Reasoning", "Quantitative Aptitude", "English"] },
+    "IBPS RRB": { defaultCount: 80, subjects: ["Reasoning", "Quantitative Aptitude"] },
+    "SSC CGL": { defaultCount: 100, subjects: ["Reasoning", "Quantitative Aptitude", "English", "General Awareness"] },
+    "UPSC CSE": { defaultCount: 100, subjects: ["General Awareness", "Current Affairs", "History", "Geography", "Polity"] },
+    "Railways NTPC": { defaultCount: 100, subjects: ["Reasoning", "Quantitative Aptitude", "General Awareness"] },
+    "TNPSC Group 1": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "Current Affairs", "General Awareness", "History", "Geography"] },
+    "TNPSC Group 2": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "General English/Tamil", "Current Affairs"] },
+    "TNPSC Group 4": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "General English/Tamil", "Current Affairs"] },
+    // Default fallback
+    "default": { defaultCount: 50, subjects: ["Reasoning", "Quantitative Aptitude", "English"] }
+};
 
 export default function PromptPage() {
+    const { t } = useLanguage();
+
     // Inputs
     const [exam, setExam] = useState("Bank PO");
     const [count, setCount] = useState(10);
-    const [subject, setSubject] = useState("Reasoning");
+    // Subjects State
+    const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["Reasoning"]);
+    const isMockTest = selectedSubjects.includes("Mock Test");
+
+    // Paste JSON Feature
+    const [showPasteButton, setShowPasteButton] = useState(false);
+    const router = useRouter();
 
     // Date State
     const [startDate, setStartDate] = useState("");
@@ -24,7 +45,6 @@ export default function PromptPage() {
     const [showAiLinks, setShowAiLinks] = useState(false);
 
     const [copied, setCopied] = useState(false);
-    const { t } = useLanguage();
 
     const tools = [
         { name: "ChatGPT", url: "https://chat.openai.com", logo: "/ailogo/openai.svg" },
@@ -33,6 +53,70 @@ export default function PromptPage() {
         { name: "DeepSeek", url: "https://chat.deepseek.com", logo: "/ailogo/deepseek-color.svg" },
         { name: "Perplexity", url: "https://www.perplexity.ai", logo: "/ailogo/perplexity-color.svg" },
     ];
+
+    const subjects = [
+        { name: "Mock Test", icon: <Layers className="w-4 h-4" /> }, // Special Option
+        { name: "Math Logic", icon: <Hash className="w-4 h-4" /> },
+        { name: "Reasoning", icon: <Sparkles className="w-4 h-4" /> },
+        { name: "Quantitative Aptitude", icon: <Hash className="w-4 h-4" /> },
+        { name: "English", icon: <BookOpen className="w-4 h-4" /> },
+        { name: "General English/Tamil", icon: <BookOpen className="w-4 h-4" /> },
+        { name: "General Studies", icon: <School className="w-4 h-4" /> },
+        { name: "History", icon: <School className="w-4 h-4" /> },
+        { name: "Geography", icon: <Globe className="w-4 h-4" /> },
+        { name: "Polity", icon: <School className="w-4 h-4" /> },
+        { name: "Current Affairs", icon: <Globe className="w-4 h-4" /> },
+        { name: "General Awareness", icon: <School className="w-4 h-4" /> },
+        { name: "Computer", icon: <Monitor className="w-4 h-4" /> },
+    ];
+
+    const exams = [
+        "Bank PO", "SBI Clerk", "IBPS RRB", "SSC CGL", "UPSC CSE", "Railways NTPC",
+        "SSC CHSL", "SSC MTS", "RBI Grade B", "LIC AAO", "IBPS Clerk", "SBI PO",
+        "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4",
+        "GATE", "CAT", "UPSC CDS", "UPSC EPFO"
+    ];
+
+    // Handle Exam Change
+    const handleExamChange = (newExam: string) => {
+        setExam(newExam);
+        // If currently in Mock Test mode, update count to new exam default
+        if (isMockTest) {
+            const def = examDefinitions[newExam] || examDefinitions["default"];
+            setCount(def.defaultCount);
+        }
+    };
+
+    const handleSubjectToggle = (subjectName: string) => {
+        if (subjectName === "Mock Test") {
+            // Select Only Mock Test
+            setSelectedSubjects(["Mock Test"]);
+            // Auto-set count
+            const def = examDefinitions[exam] || examDefinitions["default"];
+            setCount(def.defaultCount);
+            return;
+        }
+
+        let newSelection = [...selectedSubjects];
+
+        // Use functional updaters or cleaner logic
+        if (newSelection.includes("Mock Test")) {
+            // maintain logic: if clicking a normal subject while mock is active, clear mock
+            newSelection = [];
+        }
+
+        if (newSelection.includes(subjectName)) {
+            newSelection = newSelection.filter(s => s !== subjectName);
+        } else {
+            newSelection.push(subjectName);
+        }
+
+        // Enforce at least one selection if desired, or allow empty?
+        // Let's allow empty temporary, but maybe default to one if empty?
+        if (newSelection.length === 0) newSelection = ["Reasoning"]; // Fallback
+
+        setSelectedSubjects(newSelection);
+    };
 
     const handlePreset = (preset: string) => {
         setActivePreset(preset);
@@ -61,14 +145,24 @@ export default function PromptPage() {
     const generatePrompt = () => {
         let contentRequest = "";
 
-        if (subject === "Current Affairs") {
-            const dateRange = startDate && endDate ? `from ${startDate} to ${endDate}` : "(specify date range)";
-            contentRequest = `for current affairs ${dateRange}`;
+        if (isMockTest) {
+            const def = examDefinitions[exam] || examDefinitions["default"];
+            // If mock test, we want to specify it covers all relevant subjects
+            const subjectList = def.subjects.join(", ");
+            contentRequest = `as a full Mock Test covering ${subjectList}`;
         } else {
-            contentRequest = `for the subject ${subject}`;
+            // Multiple subjects
+            const subjString = selectedSubjects.join(" and ");
+
+            if (selectedSubjects.includes("Current Affairs")) {
+                const dateRange = startDate && endDate ? `from ${startDate} to ${endDate}` : "(specify date range)";
+                contentRequest = `for subjects: ${subjString} (specifically for Current Affairs ${dateRange})`;
+            } else {
+                contentRequest = `for the subjects: ${subjString}`;
+            }
         }
 
-        const safeTitle = `${exam} ${subject} Practice Set`;
+        const safeTitle = isMockTest ? `${exam} Full Mock Test` : `${exam} Practice Set (${selectedSubjects.length > 2 ? 'Mixed' : selectedSubjects.join(', ')})`;
 
         return `give me the ${count} questions based on ${exam} exam ${contentRequest} in this json format
 
@@ -99,20 +193,23 @@ export default function PromptPage() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const subjects = [
-        { name: "Reasoning", icon: <Sparkles className="w-4 h-4" /> },
-        { name: "Quantitative Aptitude", icon: <Hash className="w-4 h-4" /> },
-        { name: "English", icon: <BookOpen className="w-4 h-4" /> },
-        { name: "Current Affairs", icon: <Globe className="w-4 h-4" /> },
-        { name: "General Awareness", icon: <School className="w-4 h-4" /> },
-        { name: "Computer", icon: <Monitor className="w-4 h-4" /> },
-    ];
+    const handleToolClick = () => {
+        setTimeout(() => {
+            setShowPasteButton(true);
+        }, 2000);
+    };
 
-    const exams = [
-        "Bank PO", "SBI Clerk", "IBPS RRB", "SSC CGL", "UPSC CSE", "Railways NTPC",
-        "SSC CHSL", "SSC MTS", "RBI Grade B", "LIC AAO", "IBPS Clerk", "SBI PO",
-        "GATE", "CAT", "UPSC CDS", "UPSC EPFO"
-    ];
+    const handlePasteJson = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                localStorage.setItem("pendingExamUpload", text);
+            }
+        } catch (err) {
+            console.error("Clipboard permission denied", err);
+        }
+        router.push("/upload");
+    };
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
@@ -128,17 +225,15 @@ export default function PromptPage() {
                             </Link>
                             <h1 className="font-bold text-lg text-foreground">{t('create_exams')}</h1>
                         </div>
-                        <LanguageSwitcher />
-                        <ThemeToggle />
                     </div>
 
-                    {/* Exam Selection */}
+                    {/* 1. Exam Selection */}
                     <div className="space-y-4">
                         <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('target_exam')}</label>
                         <div className="relative group">
                             <select
                                 value={exam}
-                                onChange={(e) => setExam(e.target.value)}
+                                onChange={(e) => handleExamChange(e.target.value)}
                                 className="w-full p-4 rounded-2xl bg-background border border-border hover:border-primary/50 focus:border-primary outline-none transition-all appearance-none cursor-pointer text-base font-medium shadow-sm transition-colors"
                             >
                                 {exams.map(e => <option key={e} value={e}>{e}</option>)}
@@ -147,35 +242,60 @@ export default function PromptPage() {
                         </div>
                     </div>
 
-                    {/* Subject Selection */}
+                    {/* 2. Question Count */}
                     <div className="space-y-4">
-                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('subject')}</label>
-                        <div className="grid grid-cols-2 gap-3">
-                            {subjects.map(sub => (
-                                <button
-                                    key={sub.name}
-                                    onClick={() => setSubject(sub.name)}
-                                    className={cn(
-                                        "p-4 rounded-2xl text-sm font-medium transition-all text-left border flex items-center gap-3 relative overflow-hidden group",
-                                        subject === sub.name
-                                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                                            : "bg-background border-transparent hover:bg-secondary/60 hover:border-border"
-                                    )}
-                                >
-                                    <span className={cn(
-                                        "p-2 rounded-lg transition-colors",
-                                        subject === sub.name ? "bg-primary-foreground/10 text-primary-foreground" : "bg-secondary text-muted-foreground group-hover:text-foreground"
-                                    )}>
-                                        {sub.icon}
-                                    </span>
-                                    {sub.name}
-                                </button>
-                            ))}
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('questions_count')}</label>
+                            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm min-w-[3rem] text-center">{count}</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="5"
+                            max={isMockTest ? 200 : 100}
+                            step="5"
+                            value={count}
+                            onChange={(e) => setCount(Number(e.target.value))}
+                            className="w-full accent-primary h-2 bg-secondary rounded-lg appearance-none cursor-pointer hover:bg-secondary/80 transition-colors"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground px-1">
+                            <span>5</span>
+                            <span>{isMockTest ? 100 : 50}</span>
+                            <span>{isMockTest ? 200 : 100}</span>
                         </div>
                     </div>
 
-                    {/* Conditional: Duration */}
-                    {subject === "Current Affairs" && (
+                    {/* 3. Subject Selection */}
+                    <div className="space-y-4">
+                        <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('subject')}</label>
+                        <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                            {subjects.map(sub => {
+                                const isSelected = selectedSubjects.includes(sub.name);
+                                return (
+                                    <button
+                                        key={sub.name}
+                                        onClick={() => handleSubjectToggle(sub.name)}
+                                        className={cn(
+                                            "p-4 rounded-2xl text-sm font-medium transition-all text-left border flex items-center gap-3 relative overflow-hidden group active:scale-95",
+                                            isSelected
+                                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                                : "bg-background border-transparent hover:bg-secondary/60 hover:border-border"
+                                        )}
+                                    >
+                                        <span className={cn(
+                                            "p-2 rounded-lg transition-colors",
+                                            isSelected ? "bg-primary-foreground/10 text-primary-foreground" : "bg-secondary text-muted-foreground group-hover:text-foreground"
+                                        )}>
+                                            {sub.icon}
+                                        </span>
+                                        {sub.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Conditional: Duration (Only if Current Affairs is selected) */}
+                    {selectedSubjects.includes("Current Affairs") && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                             <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('timeframe')}</label>
 
@@ -226,28 +346,6 @@ export default function PromptPage() {
                             )}
                         </div>
                     )}
-
-                    {/* Question Count */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <label className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mb-3 ml-2 block">{t('questions_count')}</label>
-                            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-sm min-w-[3rem] text-center">{count}</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="5"
-                            max="100"
-                            step="5"
-                            value={count}
-                            onChange={(e) => setCount(Number(e.target.value))}
-                            className="w-full accent-primary h-2 bg-secondary rounded-lg appearance-none cursor-pointer hover:bg-secondary/80 transition-colors"
-                        />
-                        <div className="flex justify-between text-xs text-muted-foreground px-1">
-                            <span>5</span>
-                            <span>50</span>
-                            <span>100</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Panel: Canvas */}
@@ -255,19 +353,40 @@ export default function PromptPage() {
                     <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] opacity-20 pointer-events-none" />
 
                     <div className="flex items-center justify-between mb-6 relative z-10 min-h-[44px]">
+
+
+
+
                         {/* Header or AI Links */}
                         {showAiLinks ? (
                             <div className="flex items-center gap-4 bg-background/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-border animate-in fade-in slide-in-from-top-4 duration-300 w-fit">
                                 <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('open_with')}</span>
                                 <div className="flex items-center gap-3">
                                     {tools.map(t => (
-                                        <a key={t.name} href={t.url} target="_blank" rel="noopener noreferrer" className="relative group transition-transform hover:scale-110" title={t.name}>
+                                        <a
+                                            key={t.name}
+                                            href={t.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={handleToolClick}
+                                            className="relative group transition-transform hover:scale-110"
+                                            title={t.name}
+                                        >
                                             <div className="w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center shadow-sm group-hover:border-primary/50 group-hover:shadow-md transition-all">
                                                 <img src={t.logo} alt={t.name} className="w-5 h-5 object-contain" />
                                             </div>
                                         </a>
                                     ))}
                                 </div>
+
+                                {showPasteButton && (
+                                    <button
+                                        onClick={handlePasteJson}
+                                        className="ml-3 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-bold rounded-lg shadow-lg animate-in zoom-in duration-300 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                    >
+                                        <FileJson className="w-3 h-3" /> Paste JSON & Create
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="flex items-center gap-2">
