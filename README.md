@@ -1,6 +1,6 @@
 # PrepmyExam - AI-Powered Competitive Exam Preparation Platform
 
-**Live Demo:** [https://examprep.kolassrexon.in/](https://examprep.kolassrexon.in/) 
+**Live Demo:** [https://prepmyexam.kolassrexon.in/](https://prepmyexam.kolassrexon.in/) 
 
 **PrepmyExam** is a modern, comprehensive web application designed to help aspirants prepare for Indian competitive exams (Banking, SSC, UPSC, Railways, State PSCs). It combines real-time exam simulation, AI-powered tutoring, and detailed performance analytics to give students a competitive edge.
 
