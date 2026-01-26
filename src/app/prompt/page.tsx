@@ -352,53 +352,47 @@ export default function PromptPage() {
                 <div className="flex-1 bg-secondary/10 p-4 md:p-8 flex flex-col relative">
                     <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] opacity-20 pointer-events-none" />
 
-                    <div className="flex items-center justify-between mb-6 relative z-10 min-h-[44px]">
-
-
-
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between mb-6 relative z-10 min-h-[44px] gap-4">
 
                         {/* Header or AI Links */}
                         {showAiLinks ? (
-                            <div className="flex items-center gap-4 bg-background/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-border animate-in fade-in slide-in-from-top-4 duration-300 w-fit">
-                                <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('open_with')}</span>
+                            <div className="flex flex-wrap items-center justify-between gap-3 bg-background/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-border animate-in fade-in slide-in-from-top-4 duration-300 w-full md:w-fit">
                                 <div className="flex items-center gap-3">
-                                    {tools.map(t => (
-                                        <a
-                                            key={t.name}
-                                            href={t.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={handleToolClick}
-                                            className="relative group transition-transform hover:scale-110"
-                                            title={t.name}
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center shadow-sm group-hover:border-primary/50 group-hover:shadow-md transition-all">
-                                                <img src={t.logo} alt={t.name} className="w-5 h-5 object-contain" />
-                                            </div>
-                                        </a>
-                                    ))}
+                                    <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('open_with')}</span>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {tools.map(t => (
+                                            <a
+                                                key={t.name}
+                                                href={t.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={handleToolClick}
+                                                className="relative group transition-transform hover:scale-110"
+                                                title={t.name}
+                                            >
+                                                <div className="w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center shadow-sm group-hover:border-primary/50 group-hover:shadow-md transition-all">
+                                                    <img src={t.logo} alt={t.name} className="w-5 h-5 object-contain" />
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {showPasteButton && (
                                     <button
                                         onClick={handlePasteJson}
-                                        className="ml-3 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-bold rounded-lg shadow-lg animate-in zoom-in duration-300 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                        className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-bold rounded-lg shadow-lg animate-in zoom-in duration-300 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 md:ml-3"
                                     >
-                                        <FileJson className="w-3 h-3" /> Paste JSON & Create
+                                        <FileJson className="w-3 h-3" /> Paste JSON
                                     </button>
                                 )}
                             </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('prompt_preview')}</label>
-                            </div>
-                        )}
+                        ) : null}
 
                         <button
                             onClick={handleCopy}
                             className={cn(
-                                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-md active:scale-95 ml-auto",
+                                "flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow-md active:scale-95 w-full md:w-auto",
                                 copied
                                     ? "bg-green-500 text-white shadow-green-500/20"
                                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20"
@@ -431,7 +425,7 @@ export default function PromptPage() {
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

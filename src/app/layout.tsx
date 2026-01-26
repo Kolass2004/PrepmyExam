@@ -47,6 +47,8 @@ import { PreferencesSync } from "@/components/PreferencesSync";
 
 // ... existing imports
 
+import { AccountStatusCheck } from "@/components/AccountStatusCheck";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,6 +67,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <PreferencesSync />
+              <AccountStatusCheck />
               {children}
             </AuthProvider>
           </LanguageProvider>

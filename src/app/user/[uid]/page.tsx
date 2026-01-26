@@ -42,6 +42,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
     const [error, setError] = useState("");
     const [copied, setCopied] = useState(false);
     const [uidCopied, setUidCopied] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     // Year Selection
     const currentYear = new Date().getFullYear();
@@ -153,12 +154,22 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                     {/* Sidebar Profile Info */}
                     <div className="lg:col-span-3 space-y-6">
                         <div className="relative group w-fit mx-auto lg:mx-0">
-                            <div className="w-64 h-64 rounded-full border-4 border-card shadow-2xl overflow-hidden bg-secondary relative">
-                                <img
-                                    src={profile.photoURL || `https://ui-avatars.com/api/?name=${profile.displayName}&background=random`}
-                                    alt={profile.displayName}
-                                    className="w-full h-full object-cover"
-                                />
+                            <div className="w-64 h-64 rounded-full border-4 border-card shadow-2xl overflow-hidden bg-secondary relative flex items-center justify-center">
+                                {profile.photoURL && !imageError ? (
+                                    <img
+                                        src={profile.photoURL}
+                                        alt={profile.displayName}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = "none";
+                                            setImageError(true);
+                                        }}
+                                    />
+                                ) : (
+                                    <span className="text-8xl font-bold text-primary select-none">
+                                        {profile.displayName?.charAt(0).toUpperCase() || "U"}
+                                    </span>
+                                )}
                             </div>
                         </div>
 

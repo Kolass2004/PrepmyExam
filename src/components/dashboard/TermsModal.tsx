@@ -44,8 +44,8 @@ export function TermsModal({ isOpen, onAccept }: TermsModalProps) {
                 <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-primary/20 rounded-full blur-3xl -z-10" />
 
                 <div className="p-8 md:p-10">
-                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                        <Shield className="w-8 h-8" />
+                    <div className="flex justify-center mb-6">
+                        <img src="/prepmyexam.svg" alt="Logo" className="w-16 h-16 object-contain" />
                     </div>
 
                     <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Welcome to PrepmyExam</h2>

@@ -16,6 +16,7 @@ interface UserMenuProps {
 export function UserMenu({ user, onLogout }: UserMenuProps) {
     const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +42,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
     }, [isOpen]);
 
     const getInitials = (name: string | null) => {
-        return name ? name.slice(0, 2).toUpperCase() : "U";
+        return name ? name.slice(0, 1).toUpperCase() : "U";
     };
 
     return (
@@ -55,8 +56,13 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                     <span className="text-[10px] text-muted-foreground">Student</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 overflow-hidden">
-                    {user.photoURL ? (
-                        <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
+                    {user.photoURL && !imageError ? (
+                        <img
+                            src={user.photoURL}
+                            alt="User"
+                            className="w-full h-full object-cover"
+                            onError={() => setImageError(true)}
+                        />
                     ) : (
                         getInitials(user.displayName)
                     )}
@@ -122,7 +128,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             onClick={() => {
                                 setIsOpen(false);
                                 onLogout();
-                                
+
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-500/10 rounded-xl transition-colors text-left"
                         >

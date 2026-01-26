@@ -1,24 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { adminAuth, adminDb } from "@/lib/firebase/admin";
 
-export async function GET(request: NextRequest) {
-    const searchParams = request.nextUrl.searchParams;
-    const uid = searchParams.get("uid");
+export async function GET(req: NextRequest) {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!uid) {
-        return NextResponse.json({ error: "User ID required" }, { status: 400 });
+    // Verify user
+    const token = authHeader.split("Bearer ")[1];
+    let uid;
+    try {
+        const decoded = await adminAuth.verifyIdToken(token);
+        uid = decoded.uid;
+    } catch (e) {
+        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     try {
-        const examsSnapshot = await adminDb
-            .collection("exams")
-            .where("userId", "==", uid)
-            .limit(1)
-            .get();
+        // Check firestore for disabled flag
+        const doc = await adminDb.collection("users").doc(uid).get();
+        const data = doc.data();
 
-        return NextResponse.json({ hasExams: !examsSnapshot.empty });
+        // Also check Auth status if needed, but Firestore is what we update in admin panel
+        // (The Auth `disabled` prop is checked by Firebase Auth middleware/client SDK on login, 
+        // but active sessions might need this check).
+
+        const isDisabled = data?.disabled === true || data?.status === "disabled";
+
+        return NextResponse.json({ disabled: isDisabled });
     } catch (error) {
-        console.error("Error checking user status:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        console.error("Error fetching status", error);
+        return NextResponse.json({ error: "Internal Error" }, { status: 500 });
     }
 }
