@@ -80,7 +80,7 @@ export function LoginPage() {
             <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border transition-all">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <GraduationCap className="w-8 h-8 text-primary" />
+                        <img src="/prepmyexam.svg" alt="Logo" className="w-12 h-12" />
                         <span>PrepmyExam</span>
                     </div>
 
@@ -120,113 +120,114 @@ export function LoginPage() {
             </nav>
 
             {/* Hero Section */}
-            <header ref={heroRef} className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6">
-                <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent -z-10" />
-                <div className="absolute right-0 top-20 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -z-10" />
-                <div className="absolute left-0 bottom-0 w-72 h-72 bg-amber-500/10 rounded-full blur-[100px] -z-10" />
+            <main>
+                <header ref={heroRef} className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6">
+                    <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent -z-10" />
+                    <div className="absolute right-0 top-20 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -z-10" />
+                    <div className="absolute left-0 bottom-0 w-72 h-72 bg-amber-500/10 rounded-full blur-[100px] -z-10" />
 
-                <div className="max-w-4xl mx-auto text-center hero-content">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm font-medium mb-6">
-                        <Award className="w-4 h-4 text-primary" /> #1 Platform for Indian Competitive Exams
-                    </div>
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-balance">
-                        Master Your <span className="text-primary">Competitive Exams</span> with Confidence
-                    </h1>
-                    <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto text-balance">
-                        Comprehensive preparation for Banking, SSC, UPSC, Railways, and State PSCs with AI-powered tutoring and real-time analytics.
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <div className="p-1 rounded-xl bg-gradient-to-r from-primary to-amber-500 p-[1px]">
-                            <div className="bg-background rounded-[11px]">
-                                <LoginButton className="w-full sm:w-auto text-lg px-8 py-6 h-auto shadow-none border-0" text="Start Preparing Now" />
-                            </div>
+                    <div className="max-w-6xl mx-auto text-center hero-content">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm font-medium mb-6">
+                            <Award className="w-4 h-4 text-primary" /> #1 Platform for Indian Competitive Exams
                         </div>
-
-                    </div>
-
-                    <div className="mt-16 flex items-center justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-                        {/* Placeholder Logos */}
-                        <span className="text-2xl font-black text-muted-foreground">IBPS</span>
-                        <span className="text-2xl font-black text-muted-foreground">SSC</span>
-                        <span className="text-2xl font-black text-muted-foreground">UPSC</span>
-                        <span className="text-2xl font-black text-muted-foreground">RRB</span>
-                    </div>
-                </div>
-            </header>
-
-            {/* Categories Section */}
-            <section className="py-20 px-6 bg-secondary/30">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16 reveal-section">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4">Exams We Cover</h2>
-                        <p className="text-lg text-muted-foreground">Everything you need for Central and State government exams.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal-section">
-                        {categories.map((cat, idx) => (
-                            <div key={idx} className="bg-card hover:bg-card/50 border border-border p-6 rounded-2xl transition-all hover:shadow-lg hover:-translate-y-1 group">
-                                <div className={`w-14 h-14 ${cat.bg} ${cat.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                    {cat.icon}
-                                </div>
-                                <h3 className="text-xl font-bold mb-2">{cat.title}</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{cat.exams}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Features Section */}
-            <section className="py-24 px-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center reveal-section">
-                        <div>
-                            <h2 className="text-3xl md:text-5xl font-bold mb-6">Why Choose PrepmyExam?</h2>
-                            <p className="text-lg text-muted-foreground mb-8">
-                                We combine cutting-edge technology with expert-curated content to give you the competitive edge.
-                            </p>
-
-                            <div className="space-y-6">
-                                {features.map((feat, idx) => (
-                                    <div key={idx} className="flex gap-4">
-                                        <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                                            {feat.icon}
-                                        </div>
-                                        <div>
-                                            <h4 className="text-lg font-bold mb-1">{feat.title}</h4>
-                                            <p className="text-muted-foreground">{feat.desc}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-amber-500/20 rounded-3xl blur-3xl" />
-                            <div className="relative bg-card border border-border rounded-3xl p-8 shadow-2xl">
-                                {/* Mock UI for Feature Showcase */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div className="h-4 w-32 bg-secondary rounded-full" />
-                                        <div className="h-8 w-8 bg-green-500/20 rounded-full" />
-                                    </div>
-                                    <div className="h-32 bg-secondary/50 rounded-xl w-full mb-4" />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="h-12 bg-primary/10 border border-primary/20 rounded-lg" />
-                                        <div className="h-12 bg-secondary rounded-lg" />
-                                    </div>
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-balance">
+                            Ace Your <span className="text-primary">Government Exams</span> with AI-Driven Mock Tests
+                        </h1>
+                        <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
+                            The ultimate platform for <strong>Banking, SSC, UPSC, Railways, and State PSCs</strong> preparation. Experience personalized <strong>AI tutoring</strong>, real-time performance analytics, and adaptive practice sets.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <div className="p-1 rounded-xl bg-gradient-to-r from-primary to-amber-500 p-[1px]">
+                                <div className="bg-background rounded-[11px]">
+                                    <LoginButton className="w-full sm:w-auto text-lg px-8 py-6 h-auto shadow-none border-0" text="Start Preparing Now" />
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+
+                    <div className="mt-16 flex items-center justify-center gap-8 md:gap-16 animate-in fade-in duration-1000 delay-500 fill-mode-both transition-all">
+                        {/* Partner Logos */}
+                        <img src="/servicelogo/IBPS.png" alt="IBPS" className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity rounded-xl" />
+                        <img src="/servicelogo/SSC.jpg" alt="SSC" className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity mix-blend-multiply dark:mix-blend-normal rounded-xl" />
+                        <img src="/servicelogo/UPSC.png" alt="UPSC" className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity rounded-xl" />
+                        <img src="/servicelogo/RRB.webp" alt="RRB" className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity rounded-xl" />
+                    </div>
+                </header>
+
+                {/* Categories Section */}
+                <section className="py-20 px-6 bg-secondary/30" aria-label="Exam Categories">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-16 reveal-section">
+                            <h2 className="text-3xl md:text-5xl font-bold mb-4">Comprehensive Exam Coverage</h2>
+                            <p className="text-lg text-muted-foreground">Tailored study material and mock tests for all major Central and State government exams.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal-section">
+                            {categories.map((cat, idx) => (
+                                <div key={idx} className="bg-card hover:bg-card/50 border border-border p-6 rounded-2xl transition-all hover:shadow-lg hover:-translate-y-1 group">
+                                    <div className={`w-14 h-14 ${cat.bg} ${cat.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                        {cat.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">{cat.title}</h3>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{cat.exams}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Features Section */}
+                <section className="py-24 px-6">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center reveal-section">
+                            <div>
+                                <h2 className="text-3xl md:text-5xl font-bold mb-6">Why Choose PrepmyExam?</h2>
+                                <p className="text-lg text-muted-foreground mb-8">
+                                    We combine cutting-edge technology with expert-curated content to give you the competitive edge.
+                                </p>
+
+                                <div className="space-y-6">
+                                    {features.map((feat, idx) => (
+                                        <div key={idx} className="flex gap-4">
+                                            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                                {feat.icon}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-lg font-bold mb-1">{feat.title}</h4>
+                                                <p className="text-muted-foreground">{feat.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-amber-500/20 rounded-3xl blur-3xl" />
+                                <div className="relative bg-card border border-border rounded-3xl p-8 shadow-2xl">
+                                    {/* Mock UI for Feature Showcase */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div className="h-4 w-32 bg-secondary rounded-full" />
+                                            <div className="h-8 w-8 bg-green-500/20 rounded-full" />
+                                        </div>
+                                        <div className="h-32 bg-secondary/50 rounded-xl w-full mb-4" />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="h-12 bg-primary/10 border border-primary/20 rounded-lg" />
+                                            <div className="h-12 bg-secondary rounded-lg" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
 
             {/* Footer */}
             <footer className="bg-card border-t border-border py-12 px-6">
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter mb-4">
-                            <GraduationCap className="w-8 h-8 text-primary" />
+                            <img src="/prepmyexam.svg" alt="Logo" className="w-10 h-10" />
                             <span>PrepmyExam</span>
                         </div>
                         <p className="text-muted-foreground max-w-sm">

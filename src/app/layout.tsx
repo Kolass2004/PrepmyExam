@@ -14,6 +14,32 @@ const googleSans = localFont({
 export const metadata: Metadata = {
   title: "PrepmyExam - India's Best Exam Preparation Platform",
   description: "Comprehensive preparation for Banking, SSC, UPSC, Railways, and State PSCs with AI-powered tutoring.",
+  keywords: ["Bank Exam Preparation", "SSC Mock Tests", "UPSC Online Coaching", "Railways Exam Practice", "AI Tutor", "Government Jobs India", "IBPS", "SBI PO", "CGL"],
+  openGraph: {
+    title: "PrepmyExam - Master Your Competitive Exams",
+    description: "India's Best AI-Powered Exam Preparation Platform for Banking, SSC, UPSC & More.",
+    url: "https://prepmyexam.com",
+    siteName: "PrepmyExam",
+    images: [
+      {
+        url: "/og-image.png", // Assuming we might add this later or use a default
+        width: 1200,
+        height: 630,
+        alt: "PrepmyExam Platform",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PrepmyExam - AI Powered Preparation",
+    description: "Join thousands of aspirants acing their exams with PrepmyExam.",
+    // images: ["/twitter-image.png"],
+  },
+  icons: {
+    icon: "/prepmyexam.svg",
+  },
 };
 
 import { LanguageProvider } from "@/context/LanguageContext";

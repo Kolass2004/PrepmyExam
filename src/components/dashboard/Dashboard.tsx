@@ -325,9 +325,10 @@ export function Dashboard({ user }: DashboardProps) {
             <LogoutModal
                 isOpen={showLogoutModal}
                 onClose={() => setShowLogoutModal(false)}
-                onConfirm={() => {
+                onConfirm={async () => {
                     localStorage.clear();
-                    auth.signOut();
+                    await auth.signOut();
+                    window.location.reload();
                 }}
             />
 
