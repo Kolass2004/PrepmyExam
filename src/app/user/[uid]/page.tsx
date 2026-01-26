@@ -129,12 +129,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
             {/* Header */}
             <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group">
-                        <div className="p-2 rounded-full bg-secondary group-hover:bg-primary/10 transition-colors">
-                            <ArrowLeft className="w-4 h-4" />
-                        </div>
-                        <span className="font-medium text-sm">{t('back_dashboard')}</span>
-                    </Link>
+                    <div className="flex items-center gap-6">
+                        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter hover:opacity-80 transition-opacity">
+                            <img src="/prepmyexam.svg" alt="Logo" className="w-8 h-8" />
+                            <span>PrepmyExam</span>
+                        </Link>
+                        <div className="h-6 w-px bg-border/50 hidden sm:block" />
+                        <Link href="/" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group text-sm font-medium">
+                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            {t('back_dashboard')}
+                        </Link>
+                    </div>
                     <div className="flex items-center gap-4">
                         {!currentUser && (
                             <Link

@@ -4,6 +4,10 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { PreferencesSync } from "@/components/PreferencesSync";
+import { AccountStatusCheck } from "@/components/AccountStatusCheck";
+import { MaintenanceCheck } from "@/components/MaintenanceCheck";
 
 const googleSans = localFont({
   src: "./fonts/google.ttf",
@@ -22,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "PrepmyExam",
     images: [
       {
-        url: "/og-image.png", // Assuming we might add this later or use a default
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "PrepmyExam Platform",
@@ -35,19 +39,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PrepmyExam - AI Powered Preparation",
     description: "Join thousands of aspirants acing their exams with PrepmyExam.",
-    // images: ["/twitter-image.png"],
   },
   icons: {
     icon: "/prepmyexam.svg",
   },
 };
-
-import { LanguageProvider } from "@/context/LanguageContext";
-import { PreferencesSync } from "@/components/PreferencesSync";
-
-// ... existing imports
-
-import { AccountStatusCheck } from "@/components/AccountStatusCheck";
 
 export default function RootLayout({
   children,
@@ -67,6 +63,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <PreferencesSync />
+              <MaintenanceCheck />
               <AccountStatusCheck />
               {children}
             </AuthProvider>
