@@ -46,7 +46,7 @@ export function QuestionCard({ question, selectedOption, onOptionSelect, showRes
                 </div>
 
                 <div className="grid gap-4">
-                    {Object.entries(question.options)
+                    {Object.entries(question.options || {})
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([key, value]) => {
                             const isSelected = selectedOption === key;

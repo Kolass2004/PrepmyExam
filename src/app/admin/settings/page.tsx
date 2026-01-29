@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Save, ToggleLeft, ToggleRight, Server, Globe } from "lucide-react";
+import { Save, ToggleLeft, ToggleRight, Server, Globe, Power } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AdminSettingsPage() {
     const { user } = useAuth();
@@ -53,26 +54,47 @@ export default function AdminSettingsPage() {
 
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold">System Settings</h1>
+            <div>
+                <h1 className="text-4xl font-black tracking-tight">System Settings</h1>
+                <p className="text-muted-foreground mt-2 text-lg">Manage global configurations and feature flags</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 bg-card border border-border rounded-3xl">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        <Server className="w-6 h-6 text-primary" />
+            <div className="grid grid-cols-1 gap-6 max-w-2xl">
+                <div className="p-8 bg-card border border-border/50 rounded-[2.5rem] shadow-sm">
+                    <h2 className="text-xl font-black mb-6 flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                            <Server className="w-6 h-6" />
+                        </div>
                         Feature Flags
                     </h2>
                     <div className="space-y-4">
                         {Object.entries(features).map(([key, value]) => (
-                            <div key={key} className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl">
-                                <div>
-                                    <div className="font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                                    <div className="text-xs text-muted-foreground">Toggle system-wide behavior</div>
+                            <div
+                                key={key}
+                                className={cn(
+                                    "flex items-center justify-between p-5 rounded-[1.5rem] border border-transparent transition-all duration-300",
+                                    value ? "bg-primary/5 border-primary/10" : "bg-secondary/30 hover:bg-secondary/50"
+                                )}
+                            >
+                                <div className="space-y-1">
+                                    <div className="font-bold text-lg capitalize tracking-tight">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                                    <div className="text-sm text-muted-foreground font-medium">Toggle system-wide behavior</div>
                                 </div>
                                 <button
                                     onClick={() => toggleFeature(key)}
-                                    className={`transition-colors ${value ? "text-primary" : "text-muted-foreground"}`}
+                                    className={cn(
+                                        "relative w-16 h-9 rounded-full transition-all duration-300 shadow-inner flex items-center",
+                                        value ? "bg-primary" : "bg-muted"
+                                    )}
                                 >
-                                    {value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                                    <span
+                                        className={cn(
+                                            "absolute w-7 h-7 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center",
+                                            value ? "translate-x-8" : "translate-x-1"
+                                        )}
+                                    >
+                                        {value && <Power className="w-3 h-3 text-primary" />}
+                                    </span>
                                 </button>
                             </div>
                         ))}

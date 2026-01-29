@@ -16,17 +16,19 @@ import { useLanguage } from "@/context/LanguageContext";
 
 interface ExamContainerProps {
     examId: string;
+    questions?: any[]; // Allow custom questions
+    examTitle?: string; // Allow custom title
 }
 
-export function ExamContainer({ examId }: ExamContainerProps) {
+export function ExamContainer({ examId, questions: customQuestions, examTitle }: ExamContainerProps) {
     const { user } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
 
-    const [exam, setExam] = useState<any>(null);
+    const [exam, setExam] = useState<any>(customQuestions ? { title: examTitle, questions: customQuestions } : null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string>>({}); // index -> optionKey
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!customQuestions);
 
     const [showingFeedback, setShowingFeedback] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -36,6 +38,12 @@ export function ExamContainer({ examId }: ExamContainerProps) {
     const [showExitModal, setShowExitModal] = useState(false);
 
     useEffect(() => {
+        // If custom questions are provided, we don't need to fetch the exam
+        if (customQuestions) {
+            setLoading(false);
+            return;
+        }
+
         async function loadExamAndProgress() {
             setLoading(true);
             try {
@@ -74,10 +82,10 @@ export function ExamContainer({ examId }: ExamContainerProps) {
                 setLoading(false);
             }
         }
-        if (user) {
+        if (user && !customQuestions) {
             loadExamAndProgress();
         }
-    }, [examId, user]);
+    }, [examId, user, customQuestions]);
 
     if (loading || !exam) {
         return (
@@ -252,20 +260,43 @@ export function ExamContainer({ examId }: ExamContainerProps) {
             {/* Main Content Wrapper for Sidebar Shift */}
             <div className={`flex flex-col flex-1 min-h-0 transition-transform duration-500 ease-in-out ${isAISidebarOpen ? "md:mr-[450px]" : ""}`}>
                 <main className="flex-1 flex flex-col justify-center p-6 md:p-12 overflow-y-auto w-full max-w-5xl mx-auto">
-                    {currentQuestion && (
-                        <QuestionCard
-                            question={{
-                                id: currentQuestionIndex,
-                                content: currentQuestion.question || currentQuestion.content,
-                                options: currentQuestion.options,
-                                correctAnswer: currentQuestion.correct_answer || currentQuestion.correctAnswer
-                            }}
-                            selectedOption={answers[currentQuestionIndex] || null}
-                            onOptionSelect={handleOptionSelect}
-                            showResult={showingFeedback || !!answers[currentQuestionIndex]}
-                            isSubmitting={showingFeedback}
-                        />
-                    )}
+                    {currentQuestion && (() => {
+                        // Normalize Question Data on the fly
+                        const rawContent = currentQuestion.question || currentQuestion.content || currentQuestion.text || "";
+                        let rawOptions = currentQuestion.options || {};
+                        let rawAnswer = String(currentQuestion.correct_answer || currentQuestion.correctAnswer || currentQuestion.answer || "");
+
+                        // Handle Array Options (Convert to a,b,c...)
+                        if (Array.isArray(rawOptions)) {
+                            const newOptions: Record<string, string> = {};
+                            rawOptions.forEach((opt: string, idx: number) => {
+                                const key = String.fromCharCode(97 + idx); // a, b, c...
+                                newOptions[key] = opt;
+
+                                // Map answer if it matches value or index
+                                if (rawAnswer === String(idx) || rawAnswer.toLowerCase() === opt.toLowerCase()) {
+                                    rawAnswer = key;
+                                }
+                            });
+                            rawOptions = newOptions;
+                        }
+
+                        // Ensure we have something effectively standard
+                        return (
+                            <QuestionCard
+                                question={{
+                                    id: currentQuestionIndex,
+                                    content: rawContent,
+                                    options: rawOptions,
+                                    correctAnswer: rawAnswer
+                                }}
+                                selectedOption={answers[currentQuestionIndex] || null}
+                                onOptionSelect={handleOptionSelect}
+                                showResult={showingFeedback || !!answers[currentQuestionIndex]}
+                                isSubmitting={showingFeedback}
+                            />
+                        );
+                    })()}
                 </main>
 
                 {/* Footer Navigation */}

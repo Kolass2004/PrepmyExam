@@ -38,6 +38,8 @@ import { EmptyState } from "./EmptyState";
 export function Dashboard({ user }: DashboardProps) {
     const { t } = useLanguage();
     const [exams, setExams] = useState<Exam[]>([]);
+    const [recentExams, setRecentExams] = useState<any[]>([]); // Using any for brevity, should use interface
+    const [activeTab, setActiveTab] = useState<'sets' | 'recents'>('sets');
     const [loading, setLoading] = useState(true);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
@@ -99,6 +101,13 @@ export function Dashboard({ user }: DashboardProps) {
                 const examsData = await examsRes.json();
                 if (examsData.exams) {
                     setExams(examsData.exams);
+                }
+
+                // Fetch Recent Exams
+                const recentsRes = await fetch(`/api/user/recents?uid=${user.uid}`);
+                const recentsData = await recentsRes.json();
+                if (recentsData.recents) {
+                    setRecentExams(recentsData.recents);
                 }
 
                 // Fetch Stats
@@ -223,86 +232,147 @@ export function Dashboard({ user }: DashboardProps) {
                         </div>
 
                         <section className="dash-item">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-semibold text-foreground">{t('your_question_sets')}</h2>
-                                <Link
-                                    href="/upload"
-                                    className="px-4 py-2 bg-card hover:bg-muted text-foreground border border-border rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                >
-                                    <Plus className="w-4 h-4" /> {t('new_exam')}
-                                </Link>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <div className="flex bg-secondary/50 rounded-xl p-1 gap-1 w-full md:w-auto">
+                                    <button
+                                        onClick={() => setActiveTab('sets')}
+                                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'sets' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        {t('your_question_sets')}
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('recents')}
+                                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'recents' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        Recents Exam
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    {activeTab === 'sets' && (
+                                        <Link
+                                            href="/upload"
+                                            className="px-4 py-2 bg-card hover:bg-muted text-foreground border border-border rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                        >
+                                            <Plus className="w-4 h-4" /> {t('new_exam')}
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {exams.map(exam => (
-                                    <div key={exam.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 relative">
-                                        <Link href={`/exam-dashboard/${exam.id}`} className="block">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center text-primary">
-                                                    <div className="w-6">
-                                                        <FileIcon extension="json" {...defaultStyles.json} />
+                            {activeTab === 'sets' ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {exams.map(exam => (
+                                        <div key={exam.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 relative">
+                                            <Link href={`/exam-dashboard/${exam.id}`} className="block">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center text-primary">
+                                                        <div className="w-6">
+                                                            <FileIcon extension="json" {...defaultStyles.json} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                                        {formatIndianDate(exam.uploadedAt)}
                                                     </div>
                                                 </div>
-                                                <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                                    {formatIndianDate(exam.uploadedAt)}
-                                                </div>
-                                            </div>
 
-                                            <h3 className="text-xl font-semibold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{exam.title || "Untitled Exam"}</h3>
-                                            <p className="text-muted-foreground text-sm mb-6 font-medium">{exam.questionCount} {t('questions')}</p>
-                                        </Link>
-
-                                        <div className="flex gap-3">
-                                            <Link href={`/exam-dashboard/${exam.id}`} className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-medium transition-all shadow-sm hover:shadow-md">
-                                                <PlayCircle className="w-5 h-5" /> {t('view')}
+                                                <h3 className="text-xl font-semibold text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{exam.title || "Untitled Exam"}</h3>
+                                                <p className="text-muted-foreground text-sm mb-6 font-medium">{exam.questionCount} {t('questions')}</p>
                                             </Link>
 
-                                            {/* Menu Trigger */}
-                                            <div className="relative menu-trigger">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        setMenuOpenId(menuOpenId === exam.id ? null : exam.id);
-                                                    }}
-                                                    className="w-12 h-12 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
-                                                    title="More Options"
-                                                >
-                                                    <MoreVertical className="w-5 h-5" />
-                                                </button>
+                                            <div className="flex gap-3">
+                                                <Link href={`/exam-dashboard/${exam.id}`} className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                                                    <PlayCircle className="w-5 h-5" /> {t('view')}
+                                                </Link>
 
-                                                {/* Dropdown Menu */}
-                                                {menuOpenId === exam.id && (
-                                                    <div className="absolute bottom-full right-0 mb-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                setEditingExam(exam);
-                                                                setMenuOpenId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors text-left"
-                                                        >
-                                                            <Edit2 className="w-4 h-4" /> {t('rename')}
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                setDeletingExam(exam);
-                                                                setMenuOpenId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" /> {t('delete')}
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                {/* Menu Trigger */}
+                                                <div className="relative menu-trigger">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setMenuOpenId(menuOpenId === exam.id ? null : exam.id);
+                                                        }}
+                                                        className="w-12 h-12 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
+                                                        title="More Options"
+                                                    >
+                                                        <MoreVertical className="w-5 h-5" />
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {menuOpenId === exam.id && (
+                                                        <div className="absolute bottom-full right-0 mb-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    setEditingExam(exam);
+                                                                    setMenuOpenId(null);
+                                                                }}
+                                                                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors text-left"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" /> {t('rename')}
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    setDeletingExam(exam);
+                                                                    setMenuOpenId(null);
+                                                                }}
+                                                                className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" /> {t('delete')}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {recentExams.length === 0 ? (
+                                        <div className="col-span-full py-20 text-center bg-secondary/20 rounded-[2rem] border border-dashed border-border">
+                                            <p className="text-muted-foreground font-medium">No recent unfinished exams found.</p>
+                                        </div>
+                                    ) : (
+                                        recentExams.map(recent => {
+                                            const progressPercent = Math.round((recent.progress.answeredCount / recent.questionCount) * 100) || 0;
+                                            const href = recent.type === 'personal'
+                                                ? `/exam-dashboard/${recent.id}`
+                                                : `/question-banks/${recent.targetExamId}/attempt/${recent.id}`;
+
+                                            return (
+                                                <Link key={recent.id} href={href} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 flex flex-col">
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                                            <div className="w-6">
+                                                                <History className="w-6 h-6" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground">
+                                                            {new Date(recent.progress.timestamp).toLocaleDateString()}
+                                                        </div>
+                                                    </div>
+
+                                                    <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{recent.type === 'personal' ? recent.title : `[Bank] ${recent.title}`}</h3>
+                                                    <p className="text-muted-foreground text-sm mb-4 font-medium">{recent.progress.answeredCount} / {recent.questionCount} Answered</p>
+
+                                                    <div className="mt-auto">
+                                                        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-4">
+                                                            <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                                                        </div>
+                                                        <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground rounded-full text-sm font-bold transition-all">
+                                                            <PlayCircle className="w-5 h-5 fill-current" /> Continue
+                                                        </button>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            )}
                         </section>
                     </>
                 )

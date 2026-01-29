@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { User } from "firebase/auth";
-import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale } from "lucide-react";
+import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
@@ -104,6 +104,13 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                         >
                             <Github className="w-4 h-4" /> {t('menu_opensource')} <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
                         </a>
+                        <Link
+                            href="/question-banks"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <BookOpen className="w-4 h-4" /> {t('question_banks')}
+                        </Link>
                     </div>
 
                     <div className="border-t border-border/50 mt-1 p-1 space-y-0.5">
