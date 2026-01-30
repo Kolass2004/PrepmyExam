@@ -3,11 +3,12 @@
 import { useEffect, useState, use } from "react";
 import { ExamContainer } from "@/components/exam/ExamContainer";
 import { Loader2 } from "lucide-react";
-import { QuestionSet } from "@/lib/types";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AttemptPage(props: { params: Promise<{ examId: string; setId: string }> }) {
     const params = use(props.params);
     const { examId, setId } = params;
+    const { t } = useLanguage();
 
     const [set, setSet] = useState<QuestionSet | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function AttemptPage(props: { params: Promise<{ examId: string; s
         );
     }
 
-    if (!set) return <div>Set not found</div>;
+    if (!set) return <div>{t('set_not_found') || "Set not found"}</div>;
 
     return (
         <ExamContainer

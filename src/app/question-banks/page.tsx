@@ -62,10 +62,10 @@ export default function QuestionBanksListingPage() {
                             {t('back_dashboard')}
                         </Link>
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                            Question Banks <Sparkles className="inline-block w-8 h-8 text-primary mb-2 animate-pulse" />
+                            {t('question_banks')} <Sparkles className="inline-block w-8 h-8 text-primary mb-2 animate-pulse" />
                         </h1>
                         <p className="text-xl text-muted-foreground mt-2 max-w-2xl">
-                            Prepare with comprehensive question sets for all major competitive exams.
+                            {t('question_banks_desc')}
                         </p>
                     </div>
 
@@ -76,7 +76,7 @@ export default function QuestionBanksListingPage() {
                         </div>
                         <input
                             type="text"
-                            placeholder="Search exams..."
+                            placeholder={t('search_exams')}
                             className="w-full pl-11 pr-4 py-4 rounded-full bg-secondary/50 border-0 focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground placeholder:text-muted-foreground"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -91,12 +91,12 @@ export default function QuestionBanksListingPage() {
             <div className="w-full">
                 {filteredExams.length === 0 ? (
                     <div className="text-center py-20 bg-secondary/20 rounded-[2.5rem] border border-dashed border-border animate-in fade-in zoom-in-95 duration-500">
-                        <p className="text-muted-foreground text-lg">No question banks found matching your search.</p>
+                        <p className="text-muted-foreground text-lg">{t('no_question_banks_found')}</p>
                         <button
                             onClick={() => setSearchQuery("")}
                             className="mt-4 text-primary font-bold hover:underline"
                         >
-                            Clear Search
+                            {t('clear_search')}
                         </button>
                     </div>
                 ) : (
@@ -125,7 +125,7 @@ export default function QuestionBanksListingPage() {
                                 </h3>
 
                                 <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-grow">
-                                    {exam.description || "Comprehensive practice set for this exam."}
+                                    {exam.description || t('default_exam_desc')}
                                 </p>
 
                                 {exam.latestNews && (

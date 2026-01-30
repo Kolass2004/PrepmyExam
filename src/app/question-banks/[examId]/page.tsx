@@ -64,7 +64,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary/80 hover:bg-secondary text-foreground font-medium transition-all group mb-8"
                     >
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform text-primary" />
-                        Back to Banks
+                        {t('back_to_banks')}
                     </Link>
 
                     <div className="flex flex-col md:flex-row gap-8 items-start justify-between">
@@ -89,7 +89,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
                                         <AlertCircle className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-sm uppercase tracking-wider text-primary mb-1">Latest News</h3>
+                                        <h3 className="font-bold text-sm uppercase tracking-wider text-primary mb-1">{t('latest_news')}</h3>
                                         <p className="text-sm font-medium opacity-90">{exam.latestNews}</p>
                                     </div>
                                 </div>
@@ -98,10 +98,10 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
 
                         {/* Stats or Fast Action */}
                         <div className="p-6 bg-card border-0 shadow-sm rounded-[2rem] min-w-[280px]">
-                            <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-4">Total Sets Available</h3>
+                            <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-4">{t('total_sets_available')}</h3>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-6xl font-black text-foreground">{sets.length}</span>
-                                <span className="text-xl text-muted-foreground font-medium">Papers</span>
+                                <span className="text-xl text-muted-foreground font-medium">{t('papers')}</span>
                             </div>
                         </div>
                     </div>
@@ -112,7 +112,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
             <div className="w-full">
                 <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                     <Sparkles className="w-6 h-6 text-primary" />
-                    Available Question Sets
+                    {t('available_question_sets')}
                 </h2>
 
                 {sets.length === 0 ? (
@@ -120,10 +120,10 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
                         <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6 text-muted-foreground">
                             <BookOpen className="w-10 h-10 opacity-50" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">No question sets uploaded yet</h3>
-                        <p className="text-muted-foreground">Check back later or explore other question banks.</p>
+                        <h3 className="text-xl font-bold mb-2">{t('no_question_sets_uploaded')}</h3>
+                        <p className="text-muted-foreground">{t('check_back_later')}</p>
                         <Link href="/question-banks" className="inline-block mt-6 text-primary font-bold hover:underline">
-                            Explore other exams
+                            {t('explore_other_exams')}
                         </Link>
                     </div>
                 ) : (
@@ -142,7 +142,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
 
                                 <div className="mb-6">
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
-                                        <Clock className="w-3 h-3" /> Practice Set
+                                        <Clock className="w-3 h-3" /> {t('practice_set')}
                                     </span>
                                     <h3 className="text-2xl font-bold group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                                         {set.title}
@@ -155,7 +155,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
                                             <div className="p-1.5 bg-secondary rounded-md">
                                                 <BookOpen className="w-4 h-4" />
                                             </div>
-                                            {set.questions.length} Questions
+                                            {set.questions.length} {t('questions')}
                                         </div>
                                     </div>
 
@@ -164,7 +164,7 @@ export default function ExamDetailPage(props: { params: Promise<{ examId: string
                                         className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold rounded-2xl hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                     >
                                         <Play className="w-5 h-5 fill-current" />
-                                        Start Now
+                                        {t('start_now')}
                                     </Link>
                                 </div>
                             </div>
