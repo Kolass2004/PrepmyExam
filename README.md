@@ -45,24 +45,28 @@
 
 ##  Project Structure
 
-```bash
 src/
 ├── app/                  # Next.js App Router pages
+│   ├── admin/            # Admin Panel (Question Banks, Users, Settings)
 │   ├── api/              # API Routes (Chat, User Stats, Exam management)
 │   ├── auth/             # Authentication pages
 │   ├── dashboard/        # Main User Dashboard
 │   ├── exam/             # Exam taking interface
+│   ├── exam-dashboard/   # Individual Exam Details & Stats
 │   ├── prompt/           # AI Prompt Creator tool
+│   ├── question-banks/   # Public Question Bank Libraries
 │   └── user/             # Public Profile pages
 ├── components/           # Reusable UI Components
 │   ├── auth/             # Login buttons/forms
 │   ├── dashboard/        # Dashboard widgets (UserMenu, Stats)
 │   ├── exam/             # Exam interface components
+│   ├── language/         # Language switching components
 │   └── ui/               # Generic UI elements
+├── language/             # Localization JSON files (en, hi, ta, etc.)
 ├── lib/                  # Utilities & Configurations
 │   ├── firebase/         # Firebase Client/Admin init
 │   └── gemini.ts         # AI Model configuration
-└── context/              # React Context (AuthContext)
+└── context/              # React Context (AuthContext, LanguageContext)
 ```
 
 ##  JSON Upload Format

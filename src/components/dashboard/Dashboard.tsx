@@ -244,7 +244,7 @@ export function Dashboard({ user }: DashboardProps) {
                                         onClick={() => setActiveTab('recents')}
                                         className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'recents' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
-                                        Recents Exam
+                                        {t('recents_exam')}
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -334,7 +334,7 @@ export function Dashboard({ user }: DashboardProps) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {recentExams.length === 0 ? (
                                         <div className="col-span-full py-20 text-center bg-secondary/20 rounded-[2rem] border border-dashed border-border">
-                                            <p className="text-muted-foreground font-medium">No recent unfinished exams found.</p>
+                                            <p className="text-muted-foreground font-medium">{t('no_recent_exams')}</p>
                                         </div>
                                     ) : (
                                         recentExams.map(recent => {
@@ -356,15 +356,15 @@ export function Dashboard({ user }: DashboardProps) {
                                                         </div>
                                                     </div>
 
-                                                    <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{recent.type === 'personal' ? recent.title : `[Bank] ${recent.title}`}</h3>
-                                                    <p className="text-muted-foreground text-sm mb-4 font-medium">{recent.progress.answeredCount} / {recent.questionCount} Answered</p>
+                                                    <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{recent.type === 'personal' ? recent.title : `[${t('bank_label')}] ${recent.title}`}</h3>
+                                                    <p className="text-muted-foreground text-sm mb-4 font-medium">{recent.progress.answeredCount} / {recent.questionCount} {t('answered')}</p>
 
                                                     <div className="mt-auto">
                                                         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-4">
                                                             <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                                                         </div>
                                                         <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground rounded-full text-sm font-bold transition-all">
-                                                            <PlayCircle className="w-5 h-5 fill-current" /> Continue
+                                                            <PlayCircle className="w-5 h-5 fill-current" /> {t('continue')}
                                                         </button>
                                                     </div>
                                                 </Link>

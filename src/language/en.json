@@ -109,7 +109,6 @@
     "drop_file": "Drop your JSON file here",
     "browse_file": "or click to browse",
     "paste_json": "Paste your JSON here",
-    "continue": "Continue",
     "processing": "Processing...",
     "submit_exam_question": "Submit Exam?",
     "submit_exam_confirm_desc": "Are you sure you want to finalize your answers? You won't be able to change them after submitting.",
@@ -167,5 +166,10 @@
     "question_banks_desc": "Prepare with comprehensive question sets for all major competitive exams.",
     "description": "Description",
     "no_exams_admin": "No exams found",
-    "set_not_found": "Set not found"
+    "set_not_found": "Set not found",
+    "recents_exam": "Recents Exam",
+    "no_recent_exams": "No recent unfinished exams found.",
+    "bank_label": "Bank",
+    "answered": "Answered",
+    "continue": "Continue"
 }
