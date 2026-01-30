@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { ExamContainer } from "@/components/exam/ExamContainer";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { QuestionSet } from "@/lib/types";
 
 export default function AttemptPage(props: { params: Promise<{ examId: string; setId: string }> }) {
     const params = use(props.params);
