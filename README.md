@@ -45,6 +45,7 @@
 
 ##  Project Structure
 
+```bash
 src/
 ├── app/                  # Next.js App Router pages
 │   ├── admin/            # Admin Panel (Question Banks, Users, Settings)
