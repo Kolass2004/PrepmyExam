@@ -6,6 +6,22 @@ export interface TargetExam {
     createdAt: number | string; // Timestamp or ISO string
 }
 
+export interface RoadmapWeek {
+    week: number;
+    title: string;
+    topics: string[];
+    description?: string;
+    status: 'pending' | 'completed' | 'skipped';
+}
+
+export interface UserGoal {
+    exam: string;
+    examDate: string; // ISO Date String (YYYY-MM-DD)
+    createdAt: string;
+    roadmap?: RoadmapWeek[];
+    status?: 'generating' | 'completed';
+}
+
 export interface QuestionSet {
     id: string;
     targetExamId: string;

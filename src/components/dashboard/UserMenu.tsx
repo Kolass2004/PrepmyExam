@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { User } from "firebase/auth";
-import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale, BookOpen } from "lucide-react";
+import { LogOut, User as UserIcon, Settings, Github, ChevronDown, ExternalLink, Shield, Scale, BookOpen, Target } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
@@ -94,6 +94,13 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
                             onClick={() => setIsOpen(false)}
                         >
                             <Settings className="w-4 h-4" /> {t('menu_settings')}
+                        </Link>
+                        <Link
+                            href="/mygoal"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <Target className="w-4 h-4" /> {t('menu_my_goal')}
                         </Link>
                         <a
                             href="https://github.com/Kolass2004/Examprep"

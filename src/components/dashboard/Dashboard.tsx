@@ -32,17 +32,19 @@ import { useLanguage } from "@/context/LanguageContext";
 import { StackedLogos } from "./StackedLogos";
 import { TermsModal } from "./TermsModal";
 import { EmptyState } from "./EmptyState";
-
-// ... imports
+import { GoalModal } from "./GoalModal";
 
 export function Dashboard({ user }: DashboardProps) {
     const { t } = useLanguage();
     const [exams, setExams] = useState<Exam[]>([]);
-    const [recentExams, setRecentExams] = useState<any[]>([]); // Using any for brevity, should use interface
+    const [recentExams, setRecentExams] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'sets' | 'recents'>('sets');
     const [loading, setLoading] = useState(true);
+
+    // Modal States
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showGoalModal, setShowGoalModal] = useState(false);
 
     // Rename & Delete State
     const [editingExam, setEditingExam] = useState<Exam | null>(null);
@@ -50,8 +52,90 @@ export function Dashboard({ user }: DashboardProps) {
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
-
     const [stats, setStats] = useState({ overallScore: 0, totalAttempts: 0 });
+
+    // Check Terms & Goal
+    useEffect(() => {
+        async function checkStatus() {
+            try {
+                // 1. Check Terms
+                const termsRes = await fetch(`/api/user/terms?uid=${user.uid}`);
+                const termsData = await termsRes.json();
+
+                if (termsData.hasAcceptedTerms === false) {
+                    setShowTermsModal(true);
+                    return; // Stop here if terms not accepted
+                }
+
+                // 2. Check Goal (Only if terms accepted)
+                const goalRes = await fetch(`/api/user/goal?uid=${user.uid}`);
+                const goalData = await goalRes.json();
+
+                if (!goalData.goal) {
+                    setShowGoalModal(true);
+                }
+
+            } catch (error) {
+                console.error("Failed to check user status:", error);
+            }
+        }
+        checkStatus();
+    }, [user.uid]);
+
+    // Fetch Dashboard Data
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                // Fetch Exams
+                const examsRes = await fetch(`/api/user/exams?uid=${user.uid}`);
+                const examsData = await examsRes.json();
+                if (examsData.exams) {
+                    setExams(examsData.exams);
+                }
+
+                // Fetch Recent Exams
+                const recentsRes = await fetch(`/api/user/recents?uid=${user.uid}`);
+                const recentsData = await recentsRes.json();
+                if (recentsData.recents) {
+                    setRecentExams(recentsData.recents);
+                }
+
+                // Fetch Stats
+                const statsRes = await fetch(`/api/user/stats?uid=${user.uid}`);
+                const statsData = await statsRes.json();
+                if (statsData) {
+                    setStats(statsData);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [user.uid]);
+
+    const handleAcceptTerms = async () => {
+        try {
+            const res = await fetch("/api/user/terms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid: user.uid }),
+            });
+
+            if (res.ok) {
+                setShowTermsModal(false);
+                // After accepting terms, check for goal
+                const goalRes = await fetch(`/api/user/goal?uid=${user.uid}`);
+                const goalData = await goalRes.json();
+                if (!goalData.goal) {
+                    setShowGoalModal(true);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to accept terms:", error);
+        }
+    };
 
     const handleRename = async (newTitle: string) => {
         if (!editingExam) return;
@@ -91,72 +175,6 @@ export function Dashboard({ user }: DashboardProps) {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [menuOpenId]);
-
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                // Fetch Exams
-                const examsRes = await fetch(`/api/user/exams?uid=${user.uid}`);
-                const examsData = await examsRes.json();
-                if (examsData.exams) {
-                    setExams(examsData.exams);
-                }
-
-                // Fetch Recent Exams
-                const recentsRes = await fetch(`/api/user/recents?uid=${user.uid}`);
-                const recentsData = await recentsRes.json();
-                if (recentsData.recents) {
-                    setRecentExams(recentsData.recents);
-                }
-
-                // Fetch Stats
-                const statsRes = await fetch(`/api/user/stats?uid=${user.uid}`);
-                const statsData = await statsRes.json();
-                if (statsData) {
-                    setStats(statsData);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchData();
-    }, [user.uid]);
-
-    // Check Terms Acceptance
-    useEffect(() => {
-        async function checkTerms() {
-            try {
-                const res = await fetch(`/api/user/terms?uid=${user.uid}`);
-                const data = await res.json();
-                if (data.hasAcceptedTerms === false) {
-                    setShowTermsModal(true);
-                }
-            } catch (error) {
-                console.error("Failed to check terms status:", error);
-            }
-        }
-        checkTerms();
-    }, [user.uid]);
-
-    const handleAcceptTerms = async () => {
-        try {
-            const res = await fetch("/api/user/terms", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ uid: user.uid }),
-            });
-
-            if (res.ok) {
-                setShowTermsModal(false);
-                // Optional: Show success toast
-            }
-        } catch (error) {
-            console.error("Failed to accept terms:", error);
-        }
-    };
 
     useEffect(() => {
         if (!loading && containerRef.current) {
@@ -405,6 +423,17 @@ export function Dashboard({ user }: DashboardProps) {
             <TermsModal
                 isOpen={showTermsModal}
                 onAccept={handleAcceptTerms}
+            />
+
+            <GoalModal
+                isOpen={showGoalModal}
+                onClose={() => setShowGoalModal(false)}
+                user={user}
+                onGoalSet={() => {
+                    setShowGoalModal(false);
+                    // Optionally refresh data or redirect to /mygoal
+                    window.location.href = "/mygoal";
+                }}
             />
         </div >
     );

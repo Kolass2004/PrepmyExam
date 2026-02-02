@@ -31,18 +31,23 @@ export async function GET(request: NextRequest) {
 
         const overallScore = totalAttempts > 0 ? (totalScore / totalAttempts) : 0;
 
+        // 3. Fetch User Goal
+        const userDoc = await adminDb.collection("users").doc(uid).get();
+        const goal = userDoc.exists ? userDoc.data()?.goal || null : null;
+
         return NextResponse.json({
             user: {
                 uid: userRecord.uid,
                 displayName: userRecord.displayName,
                 photoURL: userRecord.photoURL,
-                email: userRecord.email, // Consider if email should be public. Maybe obfuscate?
+                email: userRecord.email,
                 createdAt: userRecord.metadata.creationTime,
             },
             stats: {
                 overallScore,
                 totalAttempts
-            }
+            },
+            goal
         });
 
     } catch (error) {

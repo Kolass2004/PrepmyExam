@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { PreferencesSync } from "@/components/PreferencesSync";
 import { AccountStatusCheck } from "@/components/AccountStatusCheck";
 import { MaintenanceCheck } from "@/components/MaintenanceCheck";
+import { Toaster } from "sonner";
 
 const googleSans = localFont({
   src: "./fonts/google.ttf",
@@ -68,6 +69,7 @@ export default function RootLayout({
               {children}
             </AuthProvider>
           </LanguageProvider>
+          <Toaster richColors closeButton position="top-right" />
           <script
             dangerouslySetInnerHTML={{
               __html: `

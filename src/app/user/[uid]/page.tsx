@@ -10,12 +10,15 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 
+import { UserGoal } from "@/lib/types";
+
 interface UserProfile {
     uid: string;
     displayName: string;
     photoURL: string;
     email: string;
     createdAt: string;
+    goal?: UserGoal;
 }
 
 interface UserStats {
@@ -28,6 +31,8 @@ interface ActivityDay {
     count: number;
     level: 0 | 1 | 2 | 3 | 4;
 }
+
+import { GoalModal } from "@/components/dashboard/GoalModal";
 
 export default function UserProfilePage({ params }: { params: Promise<{ uid: string }> }) {
     // Unwrap params using React.use()
@@ -44,6 +49,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
     const [uidCopied, setUidCopied] = useState(false);
     const [imageError, setImageError] = useState(false);
 
+    // Goal Modal State
+    const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+
     // Year Selection
     const currentYear = new Date().getFullYear();
     const startYear = 2026;
@@ -55,28 +63,29 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
     const [selectedYear, setSelectedYear] = useState(currentYear);
     const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                // Fetch Profile & Stats
-                const profileRes = await fetch(`/api/user/profile?uid=${uid}`);
-                if (!profileRes.ok) throw new Error("User not found");
-                const profileData = await profileRes.json();
-                setProfile(profileData.user);
-                setStats(profileData.stats);
+    async function fetchData() {
+        try {
+            // Fetch Profile & Stats
+            const profileRes = await fetch(`/api/user/profile?uid=${uid}`);
+            if (!profileRes.ok) throw new Error("User not found");
+            const profileData = await profileRes.json();
+            setProfile({ ...profileData.user, goal: profileData.goal }); // Append goal to profile for display
+            setStats(profileData.stats);
 
-                // Fetch Activity
-                const activityRes = await fetch(`/api/user/activity?uid=${uid}`);
-                const activityData = await activityRes.json();
-                setActivity(activityData.activity || []);
+            // Fetch Activity
+            const activityRes = await fetch(`/api/user/activity?uid=${uid}`);
+            const activityData = await activityRes.json();
+            setActivity(activityData.activity || []);
 
-            } catch (err) {
-                console.error(err);
-                setError("Could not load profile");
-            } finally {
-                setLoading(false);
-            }
+        } catch (err) {
+            console.error(err);
+            setError("Could not load profile");
+        } finally {
+            setLoading(false);
         }
+    }
+
+    useEffect(() => {
         fetchData();
     }, [uid]);
 
@@ -201,7 +210,53 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                             <Share2 className="w-4 h-4" />
                             {copied ? t('link_copied') : t('share_profile')}
                         </button>
+
+                        {/* Current Goal Section */}
+                        {profile['goal'] && (
+                            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm relative group overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{t('current_goal')}</h3>
+                                        {currentUser?.uid === profile.uid && (
+                                            <button
+                                                onClick={() => setIsGoalModalOpen(true)}
+                                                className="text-xs font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+                                            >
+                                                {t('edit')}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <Trophy className="w-5 h-5 text-primary" />
+                                        <span className="text-xl font-bold text-foreground">{profile['goal'].exam}</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-muted-foreground mb-4">
+                                        {t('target')}: {new Date(profile['goal'].examDate).toLocaleDateString()}
+                                    </p>
+
+                                    <Link
+                                        href="/mygoal"
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-semibold text-sm transition-all"
+                                    >
+                                        {t('view_roadmap')} <ArrowLeft className="w-4 h-4 rotate-180" />
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Goal Modal */}
+                    {currentUser && (
+                        <GoalModal
+                            isOpen={isGoalModalOpen}
+                            onClose={() => setIsGoalModalOpen(false)}
+                            user={currentUser}
+                            onGoalSet={() => {
+                                fetchData(); // Refresh profile data
+                            }}
+                        />
+                    )}
 
                     {/* Main Content */}
                     <div className="lg:col-span-9 space-y-8">
@@ -272,8 +327,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ uid: str
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 
