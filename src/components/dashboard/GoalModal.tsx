@@ -19,7 +19,7 @@ interface GoalModalProps {
 const EXAMS = [
     "Bank PO", "SBI Clerk", "IBPS RRB", "SSC CGL", "UPSC CSE", "Railways NTPC",
     "SSC CHSL", "SSC MTS", "RBI Grade B", "LIC AAO", "IBPS Clerk", "SBI PO",
-    "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4",
+    "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4", "MRB", "RRB",
     "GATE", "CAT", "UPSC CDS", "UPSC EPFO"
 ];
 

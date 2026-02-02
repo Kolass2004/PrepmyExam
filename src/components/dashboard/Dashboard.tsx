@@ -40,7 +40,9 @@ export function Dashboard({ user }: DashboardProps) {
     const [dailyTasks, setDailyTasks] = useState<any[]>([]); // New state for daily tasks
     const [deletingTask, setDeletingTask] = useState<any | null>(null); // For daily task deletion
     const [activeTab, setActiveTab] = useState<'sets' | 'recents' | 'tasks'>('sets');
+
     const [loading, setLoading] = useState(true);
+    const now = useNow();
 
 
     // Modal States
@@ -290,9 +292,14 @@ export function Dashboard({ user }: DashboardProps) {
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('tasks')}
-                                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                        className={`relative flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
                                         {t('daily_tasks')}
+                                        {dailyTasks.filter(t => (new Date(t.createdAt).getTime() + 24 * 60 * 60 * 1000) > now).length > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white shadow-sm ring-2 ring-background animate-in zoom-in duration-300">
+                                                {dailyTasks.filter(t => (new Date(t.createdAt).getTime() + 24 * 60 * 60 * 1000) > now).length}
+                                            </span>
+                                        )}
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -441,75 +448,82 @@ export function Dashboard({ user }: DashboardProps) {
                                             </Link>
                                         </div>
                                     ) : (
-                                        dailyTasks.map(task => (
-                                            <div key={task.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 flex flex-col relative overflow-hidden">
-                                                {task.isExpired && (
-                                                    <div className="absolute top-0 right-0 bg-secondary px-3 py-1 rounded-bl-xl text-xs font-bold text-muted-foreground">
-                                                        EXPIRED
-                                                    </div>
-                                                )}
+                                        dailyTasks.map(task => {
+                                            const createdAt = new Date(task.createdAt).getTime();
+                                            const expiresAt = createdAt + 24 * 60 * 60 * 1000;
+                                            const timeLeft = expiresAt - now;
+                                            const isExpired = timeLeft <= 0;
 
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${task.isExpired ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
-                                                        <div className="w-6">
-                                                            <Target className="w-6 h-6" />
+                                            return (
+                                                <div key={task.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 flex flex-col relative overflow-hidden">
+                                                    {isExpired && (
+                                                        <div className="absolute top-0 right-0 bg-secondary px-3 py-1 rounded-bl-xl text-xs font-bold text-muted-foreground z-10">
+                                                            EXPIRED
                                                         </div>
-                                                    </div>
-
-                                                    {/* Menu for Delete */}
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground">
-                                                            {new Date(task.createdAt).toLocaleDateString()}
-                                                        </div>
-                                                        <div className="relative menu-trigger">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    setMenuOpenId(menuOpenId === task.id ? null : task.id);
-                                                                }}
-                                                                className="w-8 h-8 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
-                                                            >
-                                                                <MoreVertical className="w-4 h-4" />
-                                                            </button>
-                                                            {menuOpenId === task.id && (
-                                                                <div className="absolute right-0 top-full mt-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation();
-                                                                            setDeletingTask(task);
-                                                                            setMenuOpenId(null);
-                                                                        }}
-                                                                        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" /> {t('delete')}
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{task.title}</h3>
-                                                <p className="text-muted-foreground text-sm mb-4 font-medium">{task.questionCount} Questions • {task.weekTitle}</p>
-
-                                                <div className="mt-auto">
-                                                    {task.isExpired ? (
-                                                        <button disabled className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-muted-foreground rounded-full text-sm font-bold cursor-not-allowed opacity-70">
-                                                            <Clock className="w-5 h-5" /> Expired
-                                                        </button>
-                                                    ) : (
-                                                        <Link
-                                                            href={`/exam-dashboard/${task.id}?type=daily_task`}
-                                                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
-                                                        >
-                                                            <PlayCircle className="w-5 h-5 fill-current" /> View Task
-                                                        </Link>
                                                     )}
+
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isExpired ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+                                                            <div className="w-6">
+                                                                <Target className="w-6 h-6" />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Menu for Delete */}
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground">
+                                                                {new Date(task.createdAt).toLocaleDateString()}
+                                                            </div>
+                                                            <div className="relative menu-trigger">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        setMenuOpenId(menuOpenId === task.id ? null : task.id);
+                                                                    }}
+                                                                    className="w-8 h-8 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
+                                                                >
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                </button>
+                                                                {menuOpenId === task.id && (
+                                                                    <div className="absolute right-0 top-full mt-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                setDeletingTask(task);
+                                                                                setMenuOpenId(null);
+                                                                            }}
+                                                                            className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" /> {t('delete')}
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{task.title}</h3>
+                                                    <p className="text-muted-foreground text-sm mb-4 font-medium">{task.questionCount} Questions • {task.weekTitle}</p>
+
+                                                    <div className="mt-auto">
+                                                        {isExpired ? (
+                                                            <button disabled className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-muted-foreground rounded-full text-sm font-bold cursor-not-allowed opacity-70">
+                                                                <Clock className="w-5 h-5" /> Expired
+                                                            </button>
+                                                        ) : (
+                                                            <Link
+                                                                href={`/exam-dashboard/${task.id}?type=daily_task`}
+                                                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                                                            >
+                                                                <PlayCircle className="w-5 h-5 fill-current" /> {formatTimeLeft(timeLeft)}
+                                                            </Link>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            )
+                                        })
                                     )}
                                 </div>
                             )}
@@ -557,4 +571,22 @@ export function Dashboard({ user }: DashboardProps) {
             />
         </div >
     );
+}
+
+// Helper for countdown
+function useNow() {
+    const [now, setNow] = useState(Date.now());
+    useEffect(() => {
+        const interval = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+    return now;
+}
+
+function formatTimeLeft(ms: number) {
+    if (ms <= 0) return "00:00:00";
+    const h = Math.floor(ms / (1000 * 60 * 60));
+    const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }

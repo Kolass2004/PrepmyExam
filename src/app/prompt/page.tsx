@@ -19,6 +19,10 @@ const examDefinitions: Record<string, { defaultCount: number; subjects: string[]
     "TNPSC Group 1": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "Current Affairs", "General Awareness", "History", "Geography"] },
     "TNPSC Group 2": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "General English/Tamil", "Current Affairs"] },
     "TNPSC Group 4": { defaultCount: 200, subjects: ["General Studies", "Math Logic", "General English/Tamil", "Current Affairs"] },
+    "MRB": { defaultCount: 100, subjects: ["General Studies", "Medical Science", "Current Affairs"] },
+    "RRB": { defaultCount: 100, subjects: ["Reasoning", "Quantitative Aptitude", "General Awareness"] },
+    "NEET": { defaultCount: 180, subjects: ["Physics", "Chemistry", "Biology"] },
+    "JEE Main": { defaultCount: 90, subjects: ["Physics", "Chemistry", "Mathematics"] },
     // Default fallback
     "default": { defaultCount: 50, subjects: ["Reasoning", "Quantitative Aptitude", "English"] }
 };
@@ -68,12 +72,17 @@ export default function PromptPage() {
         { name: "Current Affairs", icon: <Globe className="w-4 h-4" /> },
         { name: "General Awareness", icon: <School className="w-4 h-4" /> },
         { name: "Computer", icon: <Monitor className="w-4 h-4" /> },
+        { name: "Physics", icon: <Sparkles className="w-4 h-4" /> },
+        { name: "Chemistry", icon: <Sparkles className="w-4 h-4" /> },
+        { name: "Biology", icon: <School className="w-4 h-4" /> },
+        { name: "Mathematics", icon: <Hash className="w-4 h-4" /> },
     ];
 
     const exams = [
         "Bank PO", "SBI Clerk", "IBPS RRB", "SSC CGL", "UPSC CSE", "Railways NTPC",
         "SSC CHSL", "SSC MTS", "RBI Grade B", "LIC AAO", "IBPS Clerk", "SBI PO",
-        "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4",
+        "TNPSC Group 1", "TNPSC Group 2", "TNPSC Group 4", "MRB", "RRB",
+        "NEET", "JEE Main",
         "GATE", "CAT", "UPSC CDS", "UPSC EPFO"
     ];
 

@@ -12,7 +12,7 @@ import { CalendarSync } from "./CalendarSync";
 
 type GoalStep = 'exam-selection' | 'date-selection' | 'confirmation' | 'generating' | 'roadmap';
 
-const QUICK_EXAMS = ["UPSC CSE", "Bank PO", "SSC CGL", "NEET", "JEE Main", "CAT"];
+const QUICK_EXAMS = ["UPSC CSE", "Bank PO", "SSC CGL", "NEET", "JEE Main", "CAT", "MRB", "RRB"];
 const WEEKLY_DRILLS = [4, 8, 12, 16, 24];
 
 export default function MyGoalPage() {
@@ -713,11 +713,11 @@ export default function MyGoalPage() {
                         {generatedTaskId ? (
                             <div className="flex flex-col gap-3 w-full">
                                 <Link
-                                    href={`/question-banks/daily_task/attempt/${generatedTaskId}`}
+                                    href="/?tab=tasks"
                                     className="w-full py-5 bg-primary text-primary-foreground font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] animate-in fade-in slide-in-from-bottom-2"
                                 >
-                                    <PlayCircle className="w-5 h-5 fill-current" />
-                                    <span>Start Today's Test</span>
+                                    <Sparkles className="w-5 h-5 fill-current" />
+                                    <span>View Your Daily Task</span>
                                 </Link>
                                 <button
                                     onClick={() => setGeneratedTaskId(null)}
