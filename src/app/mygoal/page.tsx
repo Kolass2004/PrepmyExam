@@ -321,22 +321,22 @@ export default function MyGoalPage() {
                 <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mb-6">
                     <AlertTriangle className="w-10 h-10 text-destructive" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Roadmap Generation Failed</h1>
+                <h1 className="text-2xl font-bold mb-2">{t('roadmap_failed')}</h1>
                 <p className="text-muted-foreground mb-8 max-w-md">
-                    We encountered an issue while generating your personalized roadmap. Please try again.
+                    {t('roadmap_failed_desc')}
                 </p>
                 <div className="flex gap-4">
                     <button
                         onClick={confirmResetGoal}
                         className="px-8 py-3 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors"
                     >
-                        Change Goal
+                        {t('change_goal')}
                     </button>
                     <button
                         onClick={handleGenerateRoadmap}
                         className="px-8 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity"
                     >
-                        Try Again
+                        {t('try_again')}
                     </button>
                 </div>
             </div>
@@ -369,12 +369,12 @@ export default function MyGoalPage() {
 
                         {longLoading && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4 flex flex-col items-center gap-3">
-                                <p className="text-sm text-muted-foreground">It's taking a bit longer than usual. You can explore the dashboard while we finish up.</p>
+                                <p className="text-sm text-muted-foreground">{t('taking_longer')}</p>
                                 <Link
                                     href="/"
                                     className="px-6 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-colors flex items-center gap-2"
                                 >
-                                    Explore Homepage <ArrowRight className="w-4 h-4" />
+                                    {t('explore_homepage')} <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>
                         )}
@@ -400,21 +400,21 @@ export default function MyGoalPage() {
                             <Target className="w-10 h-10 text-primary" />
                         </div>
 
-                        <h2 className="text-3xl font-bold">Set Your Goal</h2>
-                        <p className="text-muted-foreground">You are about to start a journey to crack <span className="text-foreground font-bold">{selectedExam}</span>.</p>
+                        <h2 className="text-3xl font-bold">{t('set_goal_title')}</h2>
+                        <p className="text-muted-foreground">{t('set_goal_desc')} <span className="text-foreground font-bold">{selectedExam}</span>.</p>
 
                         <div className="bg-secondary/30 rounded-2xl p-4 space-y-3 text-left">
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Target Exam</span>
+                                <span className="text-sm text-muted-foreground">{t('target_exam')}</span>
                                 <span className="font-bold">{selectedExam}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Target Date</span>
+                                <span className="text-sm text-muted-foreground">{t('target_date')}</span>
                                 <span className="font-bold">{new Date(selectedDate).toLocaleDateString()}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Duration</span>
-                                <span className="font-bold">{differenceInDays(new Date(selectedDate), new Date())} Days</span>
+                                <span className="text-sm text-muted-foreground">{t('duration')}</span>
+                                <span className="font-bold">{differenceInDays(new Date(selectedDate), new Date())} {t('days')}</span>
                             </div>
                         </div>
 
@@ -424,7 +424,7 @@ export default function MyGoalPage() {
                             className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
                         >
                             {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                            Generate Roadmap
+                            {t('generate_roadmap_btn')}
                         </button>
                     </div>
                 </div>
@@ -475,8 +475,8 @@ export default function MyGoalPage() {
                         {step === 'exam-selection' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300">
                                 <div>
-                                    <h2 className="text-3xl font-bold mb-2">What's your target?</h2>
-                                    <p className="text-muted-foreground">Select the exam you are preparing for.</p>
+                                    <h2 className="text-3xl font-bold mb-2">{t('whats_your_target')}</h2>
+                                    <p className="text-muted-foreground">{t('select_exam_desc')}</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -533,7 +533,7 @@ export default function MyGoalPage() {
                                     disabled={!selectedExam.trim()}
                                     className="w-full py-4 bg-foreground text-background font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Next Step <ArrowRight className="w-4 h-4" />
+                                    {t('next_step')} <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
@@ -545,8 +545,8 @@ export default function MyGoalPage() {
                                         <ArrowRight className="w-5 h-5 rotate-180" />
                                     </button>
                                     <div>
-                                        <h2 className="text-3xl font-bold">When is the exam?</h2>
-                                        <p className="text-muted-foreground">Set your target date or choose a duration.</p>
+                                        <h2 className="text-3xl font-bold">{t('when_exam')}</h2>
+                                        <p className="text-muted-foreground">{t('set_date_desc')}</p>
                                     </div>
                                 </div>
 
@@ -557,13 +557,13 @@ export default function MyGoalPage() {
                                             onClick={() => setIsWeeklyDrill(false)}
                                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isWeeklyDrill ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
-                                            Specific Date
+                                            {t('specific_date')}
                                         </button>
                                         <button
                                             onClick={() => setIsWeeklyDrill(true)}
                                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isWeeklyDrill ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
-                                            Weekly Drill
+                                            {t('weekly_drill')}
                                         </button>
                                     </div>
 
@@ -580,7 +580,7 @@ export default function MyGoalPage() {
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            <p className="text-sm font-medium text-muted-foreground">I want a study plan for:</p>
+                                            <p className="text-sm font-medium text-muted-foreground">{t('study_plan_for')}</p>
                                             <div className="grid grid-cols-3 gap-3">
                                                 {WEEKLY_DRILLS.map(weeks => (
                                                     <button
@@ -606,7 +606,7 @@ export default function MyGoalPage() {
                                     disabled={!selectedDate}
                                     className="w-full py-4 bg-foreground text-background font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Review Goal <ArrowRight className="w-4 h-4" />
+                                    {t('review_goal')} <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
@@ -717,7 +717,7 @@ export default function MyGoalPage() {
                                     className="w-full py-5 bg-primary text-primary-foreground font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] animate-in fade-in slide-in-from-bottom-2"
                                 >
                                     <Sparkles className="w-5 h-5 fill-current" />
-                                    <span>View Your Daily Task</span>
+                                    <span>{t('view_daily_task')}</span>
                                 </Link>
                                 <button
                                     onClick={() => setGeneratedTaskId(null)}

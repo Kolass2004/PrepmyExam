@@ -61,6 +61,20 @@ export async function DELETE(request: NextRequest) {
     }
 
     try {
+        // 1. Delete all daily tasks for the user
+        const tasksRef = adminDb.collection("users").doc(uid).collection("daily_tasks");
+        const tasksSnapshot = await tasksRef.get();
+
+        if (!tasksSnapshot.empty) {
+            const batch = adminDb.batch();
+            tasksSnapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            console.log(`Deleted ${tasksSnapshot.size} daily tasks for user ${uid}`);
+        }
+
+        // 2. Reset goal in user document
         await adminDb.collection("users").doc(uid).set({
             goal: null
         }, { merge: true });
