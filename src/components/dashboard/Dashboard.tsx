@@ -237,7 +237,7 @@ export function Dashboard({ user }: DashboardProps) {
                     <div className="flex justify-center py-20">
                         <Loader2 className="w-12 h-12 animate-spin text-primary" />
                     </div>
-                ) : exams.length === 0 ? (
+                ) : (exams.length === 0 && dailyTasks.length === 0) ? (
                     <EmptyState />
                 ) : (
                     <>
@@ -251,7 +251,7 @@ export function Dashboard({ user }: DashboardProps) {
 
                             <div className="dash-item bg-card border-0 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow">
                                 <h3 className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-6">{t('exams_available')}</h3>
-                                <p className="text-6xl font-bold text-foreground">{exams.length}</p>
+                                <p className="text-6xl font-bold text-foreground">{exams.length + dailyTasks.length}</p>
                                 <BookOpen className="absolute bottom-6 right-6 w-16 h-16 text-muted-foreground opacity-10 pointer-events-none group-hover:text-primary group-hover:opacity-20 transition-colors" />
                             </div>
 

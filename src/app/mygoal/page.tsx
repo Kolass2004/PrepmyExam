@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { Loader2, Target, ArrowRight, Sparkles, BookOpen, AlertTriangle, X, Calendar, ChevronRight, Clock, PlayCircle } from "lucide-react";
+import { Loader2, Target, ArrowRight, Sparkles, BookOpen, AlertTriangle, X, Calendar, ChevronRight, Clock, PlayCircle, Search as SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { UserGoal } from "@/lib/types";
 import { differenceInDays, addWeeks } from "date-fns";
@@ -34,6 +34,42 @@ export default function MyGoalPage() {
     const [generating, setGenerating] = useState(false);
     const [longLoading, setLongLoading] = useState(false);
     const [generationFailed, setGenerationFailed] = useState(false);
+
+    // Autocomplete State
+    const [allExams, setAllExams] = useState<string[]>([]);
+    const [filteredExams, setFilteredExams] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Fetch available exams for autocomplete
+    useEffect(() => {
+        fetch('/api/question-banks')
+            .then(res => res.json())
+            .then(data => {
+                if (data.exams) {
+                    // Extract unique titles
+                    const titles = Array.from(new Set([
+                        ...QUICK_EXAMS,
+                        ...data.exams.map((e: any) => e.title || e.name)
+                    ]));
+                    setAllExams(titles);
+                }
+            })
+            .catch(err => console.error("Failed to fetch exams list:", err));
+    }, []);
+
+    // Filter logic
+    useEffect(() => {
+        if (!selectedExam) {
+            setFilteredExams([]);
+            return;
+        }
+        const lower = selectedExam.toLowerCase();
+        const matches = allExams.filter(ex =>
+            ex.toLowerCase().includes(lower) &&
+            ex.toLowerCase() !== lower // Don't show if exact match
+        );
+        setFilteredExams(matches);
+    }, [selectedExam, allExams]);
 
     async function fetchGoal() {
         if (!user || generationFailed) return;
@@ -450,9 +486,33 @@ export default function MyGoalPage() {
                                             placeholder="Enter exam name (e.g. UPSC CSE)"
                                             className="w-full p-4 pl-12 bg-secondary/30 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                                             value={selectedExam}
-                                            onChange={(e) => setSelectedExam(e.target.value)}
+                                            onChange={(e) => {
+                                                setSelectedExam(e.target.value);
+                                                setShowSuggestions(true);
+                                            }}
+                                            onFocus={() => setShowSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
                                         />
                                         <Target className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+
+                                        {/* Autocomplete Dropdown */}
+                                        {showSuggestions && filteredExams.length > 0 && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                                                {filteredExams.map((exam, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => {
+                                                            setSelectedExam(exam);
+                                                            setShowSuggestions(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-0 flex items-center gap-2"
+                                                    >
+                                                        <SearchIcon className="w-4 h-4 text-muted-foreground" />
+                                                        <span>{exam}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
