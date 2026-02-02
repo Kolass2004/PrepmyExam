@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         const roadmap = await generateWithGemini(async (model) => {
             // Calculate weeks roughly
             const weeks = Math.ceil(daysRemaining / 7);
-            const cappedWeeks = Math.min(weeks, 16); // Cap at 16 weeks to prevent timeouts
+            const cappedWeeks = weeks; // Removed 16-week limit as per user request
 
             const prompt = `Act as an expert exam tutor. Create a playful, high-energy, and structured study roadmap for the "${examName}" exam, covering the next ${cappedWeeks} weeks.
         
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             - Ensure the topics are relevant to ${examName}.
             - Make the titles catchy and "playful".
             - Include "Revisions" and "Mock Tests".
-            - If the exam is far away, focus on the first 16 weeks of foundational coverage.
+            - Cover the entire duration (up to ${cappedWeeks} weeks) comprehensively.
             - ONLY return the raw JSON array.
             `;
 
