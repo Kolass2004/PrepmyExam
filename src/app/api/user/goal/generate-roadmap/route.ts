@@ -5,8 +5,11 @@ import { adminDb } from "@/lib/firebase/admin";
 import { RoadmapWeek } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
+    let uid;
     try {
-        const { examName, daysRemaining, uid } = await request.json();
+        const body = await request.json();
+        const { examName, daysRemaining } = body;
+        uid = body.uid;
 
         if (!examName || !daysRemaining || !uid) {
             return NextResponse.json({ error: "Missing examName, daysRemaining, or uid" }, { status: 400 });
@@ -30,11 +33,12 @@ export async function POST(request: NextRequest) {
         // 6. Frontend: On success, shows "Done".
 
         // So the API just needs to do the work and wait.
+        console.log("API: Starting Gemini generation...");
 
         const roadmap = await generateWithGemini(async (model) => {
             // Calculate weeks roughly
             const weeks = Math.ceil(daysRemaining / 7);
-            const cappedWeeks = Math.min(weeks, 100);
+            const cappedWeeks = Math.min(weeks, 16); // Cap at 16 weeks to prevent timeouts
 
             const prompt = `Act as an expert exam tutor. Create a playful, high-energy, and structured study roadmap for the "${examName}" exam, covering the next ${cappedWeeks} weeks.
         
@@ -54,17 +58,25 @@ export async function POST(request: NextRequest) {
             - Ensure the topics are relevant to ${examName}.
             - Make the titles catchy and "playful".
             - Include "Revisions" and "Mock Tests".
+            - If the exam is far away, focus on the first 16 weeks of foundational coverage.
             - ONLY return the raw JSON array.
             `;
+
+            console.log("API: Sending Prompt to Gemini:", prompt);
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
 
+            console.log("API: Raw Gemini Response:", text);
+
             return JSON.parse(cleanupMarkdown(text));
         });
 
+        console.log("API: Roadmap generated successfully. Items:", roadmap?.length);
+
         // Update Firestore
+        console.log("API: Updating Firestore with roadmap...");
         await adminDb.collection("users").doc(uid).set({
             goal: {
                 roadmap: roadmap,
@@ -73,10 +85,30 @@ export async function POST(request: NextRequest) {
             }
         }, { merge: true });
 
+        console.log("API: Firestore updated. Sending success response.");
+
         return NextResponse.json({ success: true });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating roadmap:", error);
+
+        if (uid) {
+            console.log(`Attempting to set error status for user: ${uid}`);
+            try {
+                await adminDb.collection("users").doc(uid).set({
+                    goal: {
+                        status: 'error',
+                        error: error instanceof Error ? error.message : "Unknown error"
+                    }
+                }, { merge: true });
+                console.log("Successfully set error status in Firestore.");
+            } catch (fsError) {
+                console.error("Failed to write error status to Firestore:", fsError);
+            }
+        } else {
+            console.error("Cannot set error status: UID is missing/undefined in catch block.");
+        }
+
         return NextResponse.json({ error: "Failed to generate roadmap" }, { status: 500 });
     }
 }

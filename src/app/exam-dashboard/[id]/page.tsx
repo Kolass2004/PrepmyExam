@@ -25,13 +25,18 @@ interface ExamDetails {
 }
 
 export default function ExamDashboardPage() {
-    const { id } = useParams();
+    const params = useParams();
+    const id = params?.id as string;
     const { user } = useAuth();
     const { t } = useLanguage();
     const [attempts, setAttempts] = useState<Attempt[]>([]);
     const [exam, setExam] = useState<ExamDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [hasProgress, setHasProgress] = useState(false);
+
+    // Get search params for type
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const type = searchParams?.get('type');
 
     // Modal State
     const [showDiscardModal, setShowDiscardModal] = useState(false);
@@ -45,12 +50,23 @@ export default function ExamDashboardPage() {
 
         async function loadData() {
             try {
-                // Fetch Exam Details
-                const examRes = await fetch(`/api/exam/${id}`);
-                const examData = await examRes.json();
+                let examData;
+                if (type === 'daily_task') {
+                    // Fetch Daily Task Details
+                    const res = await fetch(`/api/user/daily-task/${id}?uid=${user?.uid}`);
+                    examData = await res.json();
+                } else {
+                    // Fetch Standard Exam Details
+                    const examRes = await fetch(`/api/exam/${id}`);
+                    examData = await examRes.json();
+                }
                 setExam(examData);
 
-                // Fetch Attempts
+                // Fetch Attempts 
+                // Note: We might need a specific endpoint for daily task attempts if the standard one doesn't work.
+                // Assuming standard one works if we just pass ID, but standard one might look in 'exam_attempts' collection linking to 'exams'.
+                // If daily task attempts are stored differently, this will need adjustment.
+                // For now, let's try standard fetch, but likely need to fix backend if 404.
                 const attemptsRes = await fetch(`/api/exam/${id}/attempts?uid=${user?.uid}`);
                 const attemptsData = await attemptsRes.json();
                 setAttempts(attemptsData.attempts || []);
@@ -68,7 +84,7 @@ export default function ExamDashboardPage() {
             }
         }
         loadData();
-    }, [id, user]);
+    }, [id, user, type]);
 
     if (loading) {
         return (
@@ -139,6 +155,7 @@ export default function ExamDashboardPage() {
     };
 
     const bestScore = attempts.reduce((max, attempt) => Math.max(max, attempt.score), 0);
+    const attemptLink = type === 'daily_task' ? `/question-banks/daily_task/attempt/${id}` : `/exam/${id}`;
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
@@ -188,12 +205,12 @@ export default function ExamDashboardPage() {
                                 >
                                     {t('discard')}
                                 </button>
-                                <Link href={`/exam/${id}`} className="flex-1 px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                                <Link href={attemptLink} className="flex-1 px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
                                     <RotateCcw className="w-5 h-5" /> {t('resume')}
                                 </Link>
                             </>
                         ) : (
-                            <Link href={`/exam/${id}`} className="w-full md:w-auto px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                            <Link href={attemptLink} className="w-full md:w-auto px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
                                 <PlayCircle className="w-5 h-5" /> {t('start_test')}
                             </Link>
                         )}
@@ -262,7 +279,7 @@ export default function ExamDashboardPage() {
                                             {isSelected ? <CheckSquare className="w-6 h-6" /> : <Square className="w-6 h-6" />}
                                         </button>
 
-                                        <Link href={attempt.status === "paused" ? `/exam/${id}` : `/exam-review/${attempt.id}`} className="block">
+                                        <Link href={attempt.status === "paused" ? attemptLink : `/exam-review/${attempt.id}`} className="block">
                                             <div className="flex items-center gap-3 mb-1">
                                                 <p className="text-foreground font-medium text-lg">{formatIndianDate(attempt.completedAt)}</p>
                                                 {attempt.status === "paused" && (
@@ -273,7 +290,7 @@ export default function ExamDashboardPage() {
                                             </div>
                                         </Link>
                                     </div>
-                                    <Link href={attempt.status === "paused" ? `/exam/${id}` : `/exam-review/${attempt.id}`} className="text-right pl-4">
+                                    <Link href={attempt.status === "paused" ? attemptLink : `/exam-review/${attempt.id}`} className="text-right pl-4">
                                         {attempt.status === "paused" ? (
                                             <p className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
                                                 {t('question_idx')} {(attempt as any).currentQuestionIndex + 1}

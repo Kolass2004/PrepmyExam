@@ -59,6 +59,7 @@
     "subject": "Subject",
     "timeframe": "Timeframe",
     "questions_count": "Questions",
+    "daily_tasks": "Daily Tasks",
     "prompt_preview": "Prompt Preview",
     "copy_prompt": "Copy Prompt",
     "copied": "Copied",
@@ -193,6 +194,8 @@
     "target": "Target",
     "view_roadmap": "View Roadmap",
     "edit": "Edit",
+    "create_daily_task": "Create My Daily Task",
+    "generating_task": "Creating Task...",
     "week": "Week",
     "crack": "Crack"
 }

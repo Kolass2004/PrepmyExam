@@ -11,10 +11,28 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         const attempt = { id: attemptDoc.id, ...attemptDoc.data() } as any;
 
         // Fetch Exam
-        const examDoc = await adminDb.collection("exams").doc(attempt.examId).get();
-        if (!examDoc.exists) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+        // Fetch Exam
+        let examDoc = await adminDb.collection("exams").doc(attempt.examId).get();
+        let examData = examDoc.exists ? examDoc.data() : null;
 
-        const exam = { id: examDoc.id, ...examDoc.data() };
+        // If not found in main exams, check user's daily tasks
+        if (!examData) {
+            console.log(`Exam ${attempt.examId} not found in main collection, checking daily tasks for user ${attempt.userId}`);
+            const dailyTaskDoc = await adminDb
+                .collection("users")
+                .doc(attempt.userId)
+                .collection("daily_tasks")
+                .doc(attempt.examId)
+                .get();
+
+            if (dailyTaskDoc.exists) {
+                examData = dailyTaskDoc.data();
+            }
+        }
+
+        if (!examData) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+
+        const exam = { id: attempt.examId, ...examData };
 
         return NextResponse.json({ attempt, exam });
     } catch (error) {

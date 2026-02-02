@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
     try {
@@ -47,6 +48,26 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ goal: data?.goal || null });
     } catch (error) {
         console.error("Error fetching user goal:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const uid = searchParams.get("uid");
+
+    if (!uid) {
+        return NextResponse.json({ error: "Missing uid" }, { status: 400 });
+    }
+
+    try {
+        await adminDb.collection("users").doc(uid).set({
+            goal: null
+        }, { merge: true });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting user goal:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

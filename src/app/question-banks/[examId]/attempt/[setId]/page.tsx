@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { ExamContainer } from "@/components/exam/ExamContainer";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { QuestionSet } from "@/lib/types";
 
 export default function AttemptPage(props: { params: Promise<{ examId: string; setId: string }> }) {
@@ -13,13 +14,23 @@ export default function AttemptPage(props: { params: Promise<{ examId: string; s
 
     const [set, setSet] = useState<QuestionSet | null>(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth(); // Need user for daily task fetch
 
     useEffect(() => {
         async function fetchSet() {
             try {
-                const res = await fetch(`/api/question-banks/${examId}/question-sets/${setId}`);
+                let url = `/api/question-banks/${examId}/question-sets/${setId}`;
+
+                if (examId === 'daily_task') {
+                    if (!user) return; // Wait for user to be ready
+                    url = `/api/user/daily-task/${setId}?uid=${user.uid}`;
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     setSet(await res.json());
+                } else {
+                    console.error("Failed fetch", res.status);
                 }
             } catch (e) {
                 console.error(e);
@@ -27,8 +38,10 @@ export default function AttemptPage(props: { params: Promise<{ examId: string; s
                 setLoading(false);
             }
         }
-        fetchSet();
-    }, [examId, setId]);
+        if (examId !== 'daily_task' || user) {
+            fetchSet();
+        }
+    }, [examId, setId, user]);
 
     if (loading) {
         return (
@@ -45,6 +58,7 @@ export default function AttemptPage(props: { params: Promise<{ examId: string; s
             examId={setId} // Using set ID as exam ID for consistency, though it won't fetch from "exams"
             questions={set.questions} // Pass the questions directly
             examTitle={set.title}
+            examType={examId === 'daily_task' ? 'daily_task' : 'standard'}
         />
     );
 }

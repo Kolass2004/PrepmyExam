@@ -3,7 +3,7 @@
 import { User } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { LogOut, Loader2, PlayCircle, BarChart2, Plus, Sparkles, Target, BookOpen, History, MoreVertical, Trash2 } from "lucide-react";
+import { LogOut, Loader2, PlayCircle, BarChart2, Plus, Sparkles, Target, BookOpen, History, MoreVertical, Trash2, Clock, Edit2 } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import Link from "next/link";
@@ -24,7 +24,7 @@ interface Exam {
 }
 
 import { RenameModal } from "./RenameModal";
-import { Edit2 } from "lucide-react";
+
 import { ThemeToggle } from "../theme-toggle";
 import { ColorPicker } from "../color-picker";
 import { LanguageSwitcher } from "@/components/language/LanguageSwitcher";
@@ -32,19 +32,20 @@ import { useLanguage } from "@/context/LanguageContext";
 import { StackedLogos } from "./StackedLogos";
 import { TermsModal } from "./TermsModal";
 import { EmptyState } from "./EmptyState";
-import { GoalModal } from "./GoalModal";
 
 export function Dashboard({ user }: DashboardProps) {
     const { t } = useLanguage();
     const [exams, setExams] = useState<Exam[]>([]);
     const [recentExams, setRecentExams] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'sets' | 'recents'>('sets');
+    const [dailyTasks, setDailyTasks] = useState<any[]>([]); // New state for daily tasks
+    const [deletingTask, setDeletingTask] = useState<any | null>(null); // For daily task deletion
+    const [activeTab, setActiveTab] = useState<'sets' | 'recents' | 'tasks'>('sets');
     const [loading, setLoading] = useState(true);
+
 
     // Modal States
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
-    const [showGoalModal, setShowGoalModal] = useState(false);
 
     // Rename & Delete State
     const [editingExam, setEditingExam] = useState<Exam | null>(null);
@@ -67,20 +68,26 @@ export function Dashboard({ user }: DashboardProps) {
                     return; // Stop here if terms not accepted
                 }
 
-                // 2. Check Goal (Only if terms accepted)
-                const goalRes = await fetch(`/api/user/goal?uid=${user.uid}`);
-                const goalData = await goalRes.json();
-
-                if (!goalData.goal) {
-                    setShowGoalModal(true);
-                }
-
             } catch (error) {
                 console.error("Failed to check user status:", error);
             }
         }
         checkStatus();
     }, [user.uid]);
+
+    // Check URL for tab param
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get('tab');
+            if (tabParam === 'tasks') {
+                setActiveTab('tasks');
+            }
+        }
+    }, []);
+
+
+    // ... previous useEffect ...
 
     // Fetch Dashboard Data
     useEffect(() => {
@@ -98,6 +105,13 @@ export function Dashboard({ user }: DashboardProps) {
                 const recentsData = await recentsRes.json();
                 if (recentsData.recents) {
                     setRecentExams(recentsData.recents);
+                }
+
+                // Fetch Daily Tasks
+                const tasksRes = await fetch(`/api/user/daily-task?uid=${user.uid}`);
+                const tasksData = await tasksRes.json();
+                if (tasksData.tasks) {
+                    setDailyTasks(tasksData.tasks);
                 }
 
                 // Fetch Stats
@@ -125,12 +139,6 @@ export function Dashboard({ user }: DashboardProps) {
 
             if (res.ok) {
                 setShowTermsModal(false);
-                // After accepting terms, check for goal
-                const goalRes = await fetch(`/api/user/goal?uid=${user.uid}`);
-                const goalData = await goalRes.json();
-                if (!goalData.goal) {
-                    setShowGoalModal(true);
-                }
             }
         } catch (error) {
             console.error("Failed to accept terms:", error);
@@ -164,6 +172,22 @@ export function Dashboard({ user }: DashboardProps) {
             console.error("Failed to delete exam", error);
         }
     };
+
+    const handleDeleteDailyTask = async () => {
+        if (!deletingTask) return;
+
+        try {
+            await fetch(`/api/user/daily-task/${deletingTask.id}?uid=${user.uid}`, {
+                method: "DELETE"
+            });
+            // Update local state
+            setDailyTasks(prev => prev.filter(t => t.id !== deletingTask.id));
+            setDeletingTask(null);
+        } catch (error) {
+            console.error("Failed to delete daily task", error);
+        }
+    };
+
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -264,6 +288,12 @@ export function Dashboard({ user }: DashboardProps) {
                                     >
                                         {t('recents_exam')}
                                     </button>
+                                    <button
+                                        onClick={() => setActiveTab('tasks')}
+                                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        {t('daily_tasks')}
+                                    </button>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     {activeTab === 'sets' && (
@@ -348,7 +378,7 @@ export function Dashboard({ user }: DashboardProps) {
                                         </div>
                                     ))}
                                 </div>
-                            ) : (
+                            ) : activeTab === 'recents' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {recentExams.length === 0 ? (
                                         <div className="col-span-full py-20 text-center bg-secondary/20 rounded-[2rem] border border-dashed border-border">
@@ -390,6 +420,98 @@ export function Dashboard({ user }: DashboardProps) {
                                         })
                                     )}
                                 </div>
+                            ) : (
+                                // TASKS TAB CONTENT
+                                // TASKS TAB CONTENT
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {dailyTasks.length === 0 ? (
+                                        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-secondary/10 rounded-[2rem] border border-dashed border-border text-center p-8">
+                                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                                                <Sparkles className="w-10 h-10 text-primary" />
+                                            </div>
+                                            <h3 className="text-2xl font-bold mb-2">No Daily Tasks Yet</h3>
+                                            <p className="text-muted-foreground mb-8 max-w-md">
+                                                Go to your Roadmap to generate a personalized daily task.
+                                            </p>
+                                            <Link
+                                                href="/mygoal"
+                                                className="px-8 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2"
+                                            >
+                                                View Roadmap <Sparkles className="w-4 h-4" />
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        dailyTasks.map(task => (
+                                            <div key={task.id} className="group bg-card hover:bg-secondary/50 border-0 shadow-sm hover:shadow-md rounded-[24px] p-6 transition-all duration-300 flex flex-col relative overflow-hidden">
+                                                {task.isExpired && (
+                                                    <div className="absolute top-0 right-0 bg-secondary px-3 py-1 rounded-bl-xl text-xs font-bold text-muted-foreground">
+                                                        EXPIRED
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${task.isExpired ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+                                                        <div className="w-6">
+                                                            <Target className="w-6 h-6" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Menu for Delete */}
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="px-3 py-1 bg-secondary rounded-full text-xs font-medium text-muted-foreground">
+                                                            {new Date(task.createdAt).toLocaleDateString()}
+                                                        </div>
+                                                        <div className="relative menu-trigger">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    setMenuOpenId(menuOpenId === task.id ? null : task.id);
+                                                                }}
+                                                                className="w-8 h-8 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
+                                                            >
+                                                                <MoreVertical className="w-4 h-4" />
+                                                            </button>
+                                                            {menuOpenId === task.id && (
+                                                                <div className="absolute right-0 top-full mt-2 w-48 bg-secondary border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in zoom-in-95 duration-200">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            setDeletingTask(task);
+                                                                            setMenuOpenId(null);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" /> {t('delete')}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <h3 className="text-xl font-semibold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors tracking-tight">{task.title}</h3>
+                                                <p className="text-muted-foreground text-sm mb-4 font-medium">{task.questionCount} Questions • {task.weekTitle}</p>
+
+                                                <div className="mt-auto">
+                                                    {task.isExpired ? (
+                                                        <button disabled className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-muted-foreground rounded-full text-sm font-bold cursor-not-allowed opacity-70">
+                                                            <Clock className="w-5 h-5" /> Expired
+                                                        </button>
+                                                    ) : (
+                                                        <Link
+                                                            href={`/exam-dashboard/${task.id}?type=daily_task`}
+                                                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-sm font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                                                        >
+                                                            <PlayCircle className="w-5 h-5 fill-current" /> View Task
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             )}
                         </section>
                     </>
@@ -410,6 +532,15 @@ export function Dashboard({ user }: DashboardProps) {
                 onConfirm={handleDelete}
             />
 
+            <DeleteExamModal
+                isOpen={!!deletingTask}
+                examTitle={deletingTask?.title || "Daily Task"}
+                onClose={() => setDeletingTask(null)}
+                onConfirm={handleDeleteDailyTask}
+                description="Are you sure you want to delete this daily task? This action cannot be undone."
+            />
+
+
             <LogoutModal
                 isOpen={showLogoutModal}
                 onClose={() => setShowLogoutModal(false)}
@@ -423,17 +554,6 @@ export function Dashboard({ user }: DashboardProps) {
             <TermsModal
                 isOpen={showTermsModal}
                 onAccept={handleAcceptTerms}
-            />
-
-            <GoalModal
-                isOpen={showGoalModal}
-                onClose={() => setShowGoalModal(false)}
-                user={user}
-                onGoalSet={() => {
-                    setShowGoalModal(false);
-                    // Optionally refresh data or redirect to /mygoal
-                    window.location.href = "/mygoal";
-                }}
             />
         </div >
     );

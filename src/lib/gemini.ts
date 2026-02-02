@@ -40,11 +40,14 @@ export async function generateWithGemini(
         try {
             const genAI = new GoogleGenerativeAI(apiKey);
 
+            // Use a known valid model
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             return await callback(model);
 
         } catch (error: any) {
+            console.error(`Gemini Error (Key Index ${currentKeyIndex}):`, error.message || error);
+
             const isQuotaError =
                 error?.message?.includes('429') ||
                 error?.message?.includes('Quota') ||
@@ -56,8 +59,7 @@ export async function generateWithGemini(
                 attempts++;
                 currentKeyIndex = (currentKeyIndex + 1) % KEYS.length;
             } else {
-
-                throw error;
+                throw error; // Re-throw non-quota errors (like 400 Bad Request, 404 Not Found)
             }
         }
     }

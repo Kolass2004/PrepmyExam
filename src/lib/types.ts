@@ -19,7 +19,7 @@ export interface UserGoal {
     examDate: string; // ISO Date String (YYYY-MM-DD)
     createdAt: string;
     roadmap?: RoadmapWeek[];
-    status?: 'generating' | 'completed';
+    status?: 'generating' | 'completed' | 'error';
 }
 
 export interface QuestionSet {

@@ -10,9 +10,10 @@ interface DeleteExamModalProps {
     examTitle: string;
     onClose: () => void;
     onConfirm: () => void;
+    description?: string;
 }
 
-export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm }: DeleteExamModalProps) {
+export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm, description }: DeleteExamModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const { t } = useLanguage();
@@ -60,7 +61,7 @@ export function DeleteExamModal({ isOpen, examTitle, onClose, onConfirm }: Delet
 
                     <h3 className="text-2xl font-bold text-foreground mb-2">{t('delete_exam')}</h3>
                     <p className="text-muted-foreground mb-8 text-lg">
-                        {t('delete_confirm_desc').replace('{examName}', examTitle)}
+                        {description || t('delete_confirm_desc').replace('{examName}', examTitle)}
                     </p>
 
                     <div className="flex w-full gap-4">

@@ -4,11 +4,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { Loader2, Target, ArrowRight, Sparkles, BookOpen, AlertTriangle, X } from "lucide-react";
+import { Loader2, Target, ArrowRight, Sparkles, BookOpen, AlertTriangle, X, Calendar, ChevronRight, Clock, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import { UserGoal } from "@/lib/types";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, addWeeks } from "date-fns";
 import { CalendarSync } from "./CalendarSync";
+
+type GoalStep = 'exam-selection' | 'date-selection' | 'confirmation' | 'generating' | 'roadmap';
+
+const QUICK_EXAMS = ["UPSC CSE", "Bank PO", "SSC CGL", "NEET", "JEE Main", "CAT"];
+const WEEKLY_DRILLS = [4, 8, 12, 16, 24];
 
 export default function MyGoalPage() {
     const { user, loading: authLoading } = useAuth();
@@ -16,15 +21,40 @@ export default function MyGoalPage() {
 
     const [goal, setGoal] = useState<UserGoal | null>(null);
     const [loading, setLoading] = useState(true);
+    const [step, setStep] = useState<GoalStep>('exam-selection');
+
+    // Wizard State
+    const [selectedExam, setSelectedExam] = useState("");
+    const [selectedDate, setSelectedDate] = useState<string>("");
+    const [isWeeklyDrill, setIsWeeklyDrill] = useState(false);
+
+    // UI State
     const [showResetModal, setShowResetModal] = useState(false);
     const [resetting, setResetting] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const [longLoading, setLongLoading] = useState(false);
+    const [generationFailed, setGenerationFailed] = useState(false);
 
     async function fetchGoal() {
-        if (!user) return;
+        if (!user || generationFailed) return;
         try {
             const res = await fetch(`/api/user/goal?uid=${user.uid}`);
             const data = await res.json();
-            setGoal(data.goal);
+
+            if (generationFailed) return; // Double check
+
+            if (data.goal) {
+                setGoal(data.goal);
+                if (data.goal.status === 'completed') {
+                    setStep('roadmap');
+                } else if (data.goal.status === 'error') {
+                    setGenerationFailed(true);
+                } else {
+                    if (step !== 'generating') setStep('generating');
+                }
+            } else {
+                setStep('exam-selection');
+            }
         } catch (error) {
             console.error("Failed to fetch goal:", error);
         } finally {
@@ -39,24 +69,106 @@ export default function MyGoalPage() {
     // Polling for generating status
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (goal?.status === 'generating') {
-            interval = setInterval(fetchGoal, 3000);
+        if (goal?.status === 'generating' && !generationFailed) {
+            console.log("Frontend: Goal status is 'generating', starting poll...");
+            setStep('generating');
+            interval = setInterval(() => {
+                console.log("Frontend: Polling goal status...");
+                fetchGoal();
+            }, 3000);
         }
         return () => clearInterval(interval);
-    }, [goal?.status]);
+    }, [goal?.status, generationFailed]);
 
-    const handleWeekSelect = (week: number) => {
-        const element = document.getElementById(`week-card-${week}`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        if (step === 'generating' || goal?.status === 'generating') {
+            timeout = setTimeout(() => {
+                setLongLoading(true);
+            }, 10000);
+        } else {
+            setLongLoading(false);
+        }
+        return () => clearTimeout(timeout);
+    }, [step, goal?.status]);
 
-            // Add a temporary highlight flash
-            element.classList.add('ring-2', 'ring-primary', 'scale-[1.02]');
-            setTimeout(() => {
-                element.classList.remove('ring-2', 'ring-primary', 'scale-[1.02]');
-            }, 1000);
+    const handleGenerateRoadmap = async () => {
+        if (!user || !selectedExam || !selectedDate) {
+            console.warn("Frontend: Missing data for generation", { user: !!user, selectedExam, selectedDate });
+            return;
+        }
+        setGenerating(true);
+        setGenerationFailed(false);
+        console.log("Frontend: Starting generation process...");
+
+        try {
+            // 1. Save Goal
+            const newGoal: Partial<UserGoal> = {
+                exam: selectedExam,
+                examDate: selectedDate,
+                createdAt: new Date().toISOString(),
+                status: 'generating'
+            };
+
+            console.log("Frontend: Saving initial goal state...");
+            await fetch('/api/user/goal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: user.uid, goal: newGoal })
+            });
+
+            // Update local state to trigger polling
+            setGoal(newGoal as UserGoal);
+
+            // 2. Trigger Generation
+            console.log("Frontend: Triggering generation API...");
+            const daysRemaining = differenceInDays(new Date(selectedDate), new Date());
+
+            // We await this, but if the API times out (Vercel limit), we might catch an error.
+            // However, we want the polling to continue even if this request hangs/returns 504.
+            // So we might not want to await it strictly blocking the UI state, but step update is fine.
+
+            fetch('/api/user/goal/generate-roadmap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    examName: selectedExam,
+                    examDate: selectedDate,
+                    daysRemaining
+                })
+            }).then(res => {
+                console.log("Frontend: Generation API responded", res.status);
+            }).catch(e => {
+                console.error("Frontend: Generation API failed request", e);
+            });
+
+            setStep('generating');
+        } catch (error) {
+            console.error("Error creating goal:", error);
+        } finally {
+            // We don't set generating false here immediately if we wait for polling?
+            // Actually 'generating' state on button is fine to remove, 
+            // but we move to 'generating' STEP.
+            setGenerating(false);
         }
     };
+
+    // Check for stale 'generating' state on mount/update
+    useEffect(() => {
+        if (goal?.status === 'generating' && goal.createdAt) {
+            const createdAtTime = new Date(goal.createdAt).getTime();
+            const now = Date.now();
+            const elapsed = now - createdAtTime;
+
+            // If more than 60 seconds have passed since creation and it's still 'generating',
+            // consider it failed/stuck.
+            if (elapsed > 60000) {
+                console.warn("Frontend: Goal generation appears stuck (stale > 60s). Showing error.");
+                setGenerationFailed(true);
+            }
+        }
+    }, [goal?.status, goal?.createdAt]);
 
     const confirmResetGoal = async () => {
         if (!user) return;
@@ -66,12 +178,94 @@ export default function MyGoalPage() {
             const res = await fetch(`/api/user/goal?uid=${user.uid}`, { method: 'DELETE' });
             if (res.ok) {
                 setGoal(null);
+                setStep('exam-selection');
+                setSelectedExam("");
+                setSelectedDate("");
+                setIsWeeklyDrill(false);
                 setShowResetModal(false);
             }
         } catch (error) {
             console.error("Failed to reset goal:", error);
         } finally {
             setResetting(false);
+        }
+    };
+
+    const handleWeekSelect = (week: number) => {
+        const element = document.getElementById(`week-card-${week}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('ring-2', 'ring-primary', 'scale-[1.02]');
+            setTimeout(() => element.classList.remove('ring-2', 'ring-primary', 'scale-[1.02]'), 1000);
+        }
+    };
+
+    const [generatingTask, setGeneratingTask] = useState(false);
+    const [generatedTaskId, setGeneratedTaskId] = useState<string | null>(null);
+
+    // We need router to redirect to dashboard after generation
+    // Ensure useRouter is imported from 'next/navigation' at the top if not already (it's not, I'll check imports)
+
+    const handleGenerateDailyTask = async () => {
+        if (!user || !goal || !goal.roadmap) return;
+
+        setGeneratingTask(true);
+        try {
+            // 1. Determine Current Week
+            // Simple logic: Difference in weeks from start date. 
+            // If strictly based on syllabus, we might pick the "next pending" week. 
+            // For now, let's pick the first week if just starting, or calculated week.
+            const startDate = new Date(goal.createdAt);
+            const now = new Date();
+            // detailed diff in weeks
+            const diffTime = Math.abs(now.getTime() - startDate.getTime());
+            const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+
+            // Current week index (1-based)
+            let currentWeekIndex = diffWeeks || 1;
+            if (currentWeekIndex > goal.roadmap.length) currentWeekIndex = goal.roadmap.length;
+
+            const weekData = goal.roadmap.find(w => w.week === currentWeekIndex) || goal.roadmap[0];
+
+            if (!weekData) {
+                console.error("No week data found", { currentWeekIndex, roadmapLength: goal.roadmap.length });
+                return;
+            }
+
+            console.log("Frontend: Generating Daily Task for:", {
+                uid: user.uid,
+                exam: goal.exam,
+                week: weekData.title,
+                topics: weekData.topics
+            });
+
+            // 2. Call API
+            const res = await fetch('/api/user/daily-task/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    examName: goal.exam,
+                    weekTitle: weekData.title,
+                    topics: weekData.topics
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // Remove redirect, show success state locally
+                setGeneratedTaskId(data.taskId);
+            } else {
+                console.error("Failed to generate task:", data.error);
+                alert("Failed to create daily task. Please try again.");
+            }
+
+        } catch (error) {
+            console.error("Error generating daily task:", error);
+            alert("An error occurred.");
+        } finally {
+            setGeneratingTask(false);
         }
     };
 
@@ -83,10 +277,39 @@ export default function MyGoalPage() {
         );
     }
 
-    if (goal?.status === 'generating') {
+    // --- WIZARD STEPS ---
+
+    if (goal?.status === 'error' || generationFailed) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mb-6">
+                    <AlertTriangle className="w-10 h-10 text-destructive" />
+                </div>
+                <h1 className="text-2xl font-bold mb-2">Roadmap Generation Failed</h1>
+                <p className="text-muted-foreground mb-8 max-w-md">
+                    We encountered an issue while generating your personalized roadmap. Please try again.
+                </p>
+                <div className="flex gap-4">
+                    <button
+                        onClick={confirmResetGoal}
+                        className="px-8 py-3 bg-secondary text-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors"
+                    >
+                        Change Goal
+                    </button>
+                    <button
+                        onClick={handleGenerateRoadmap}
+                        className="px-8 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (step === 'generating' || goal?.status === 'generating') {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-                {/* Background Decor */}
                 <div className="absolute inset-0 bg-secondary/10 pointer-events-none" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[100px] -mr-32 -mt-32 animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -ml-32 -mb-32 animate-pulse delay-700" />
@@ -99,34 +322,243 @@ export default function MyGoalPage() {
 
                     <h1 className="text-3xl font-bold mb-4 tracking-tight">{t('building_roadmap_title')}</h1>
                     <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-                        {t('building_roadmap_desc')} <span className="text-primary font-bold">{goal.exam}</span>.
+                        {t('building_roadmap_desc')} <span className="text-primary font-bold">{selectedExam || goal?.exam}</span>.
                     </p>
 
-                    <div className="flex items-center gap-3 bg-card border border-border px-5 py-3 rounded-full shadow-sm animate-pulse">
-                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        <span className="text-sm font-medium">{t('please_wait')}</span>
+                    <div className="flex flex-col items-center gap-4 w-full">
+                        <div className="flex items-center gap-3 bg-card border border-border px-5 py-3 rounded-full shadow-sm animate-pulse">
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                            <span className="text-sm font-medium">{t('please_wait')}</span>
+                        </div>
+
+                        {longLoading && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4 flex flex-col items-center gap-3">
+                                <p className="text-sm text-muted-foreground">It's taking a bit longer than usual. You can explore the dashboard while we finish up.</p>
+                                <Link
+                                    href="/"
+                                    className="px-6 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-colors flex items-center gap-2"
+                                >
+                                    Explore Homepage <ArrowRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
         );
     }
 
-    if (!goal) {
+    if (step === 'confirmation') {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-24 h-24 bg-secondary rounded-full flex items-center justify-center mb-6">
-                    <Target className="w-12 h-12 text-muted-foreground" />
+            <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-card border border-border rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                    <button
+                        onClick={() => setStep('date-selection')}
+                        className="absolute top-4 left-4 p-2 rounded-full hover:bg-secondary transition-colors"
+                    >
+                        <ArrowRight className="w-5 h-5 rotate-180" />
+                    </button>
+
+                    <div className="text-center space-y-6 pt-4">
+                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Target className="w-10 h-10 text-primary" />
+                        </div>
+
+                        <h2 className="text-3xl font-bold">Set Your Goal</h2>
+                        <p className="text-muted-foreground">You are about to start a journey to crack <span className="text-foreground font-bold">{selectedExam}</span>.</p>
+
+                        <div className="bg-secondary/30 rounded-2xl p-4 space-y-3 text-left">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Target Exam</span>
+                                <span className="font-bold">{selectedExam}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Target Date</span>
+                                <span className="font-bold">{new Date(selectedDate).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Duration</span>
+                                <span className="font-bold">{differenceInDays(new Date(selectedDate), new Date())} Days</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleGenerateRoadmap}
+                            disabled={generating}
+                            className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl text-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                        >
+                            {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                            Generate Roadmap
+                        </button>
+                    </div>
                 </div>
-                <h1 className="text-2xl font-bold mb-2">{t('no_goal_set')}</h1>
-                <p className="text-muted-foreground mb-8 max-w-md">
-                    {t('set_target_msg')}
-                </p>
-                <Link href="/" className="px-8 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity">
-                    {t('go_dashboard')}
-                </Link>
             </div>
         );
     }
+
+    if (step === 'exam-selection' || step === 'date-selection') {
+        return (
+            <div className="min-h-screen bg-background text-foreground flex">
+                {/* Left Panel - Motivational / Info */}
+                <div className="hidden lg:flex w-1/2 bg-card border-r border-border p-12 flex-col justify-between relative overflow-hidden">
+                    <div className="absolute inset-0 bg-secondary/5 pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px]" />
+
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter relative z-10 w-fit">
+                        <img src="/prepmyexam.svg" alt="Logo" className="w-8 h-8" />
+                        <span>PrepmyExam</span>
+                    </Link>
+
+                    <div className="relative z-10 max-w-lg">
+                        {step === 'exam-selection' ? (
+                            <>
+                                <h1 className="text-5xl font-black tracking-tight leading-tight mb-6">
+                                    "The future belongs to those who believe in the beauty of their dreams."
+                                </h1>
+                                <p className="text-xl text-muted-foreground">- Eleanor Roosevelt</p>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-sm font-bold text-primary uppercase tracking-widest mb-2 block">Selected Goal</span>
+                                <h1 className="text-6xl font-black tracking-tighter mb-4">{selectedExam}</h1>
+                                <p className="text-xl text-muted-foreground">Great choice! Now let's set a deadline to keep you on track.</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex gap-2 relative z-10">
+                        <div className={`h-1.5 rounded-full transition-all duration-300 ${step === 'exam-selection' ? 'w-12 bg-primary' : 'w-4 bg-secondary'}`} />
+                        <div className={`h-1.5 rounded-full transition-all duration-300 ${step === 'date-selection' ? 'w-12 bg-primary' : 'w-4 bg-secondary'}`} />
+                        <div className="h-1.5 w-4 rounded-full bg-secondary" /> {/* Step 3 indicator */}
+                    </div>
+                </div>
+
+                {/* Right Panel - Inputs */}
+                <div className="flex-1 p-8 lg:p-12 flex flex-col justify-center items-center relative">
+                    <div className="w-full max-w-md space-y-8">
+                        {step === 'exam-selection' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300">
+                                <div>
+                                    <h2 className="text-3xl font-bold mb-2">What's your target?</h2>
+                                    <p className="text-muted-foreground">Select the exam you are preparing for.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter exam name (e.g. UPSC CSE)"
+                                            className="w-full p-4 pl-12 bg-secondary/30 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                                            value={selectedExam}
+                                            onChange={(e) => setSelectedExam(e.target.value)}
+                                        />
+                                        <Target className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {QUICK_EXAMS.map(exam => (
+                                            <button
+                                                key={exam}
+                                                onClick={() => setSelectedExam(exam)}
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${selectedExam === exam ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-secondary border-border'}`}
+                                            >
+                                                {exam}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setStep('date-selection')}
+                                    disabled={!selectedExam.trim()}
+                                    className="w-full py-4 bg-foreground text-background font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Next Step <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+
+                        {step === 'date-selection' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <button onClick={() => setStep('exam-selection')} className="p-2 hover:bg-secondary rounded-full -ml-2">
+                                        <ArrowRight className="w-5 h-5 rotate-180" />
+                                    </button>
+                                    <div>
+                                        <h2 className="text-3xl font-bold">When is the exam?</h2>
+                                        <p className="text-muted-foreground">Set your target date or choose a duration.</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* Toggle */}
+                                    <div className="flex bg-secondary/50 p-1 rounded-xl">
+                                        <button
+                                            onClick={() => setIsWeeklyDrill(false)}
+                                            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isWeeklyDrill ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            Specific Date
+                                        </button>
+                                        <button
+                                            onClick={() => setIsWeeklyDrill(true)}
+                                            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isWeeklyDrill ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            Weekly Drill
+                                        </button>
+                                    </div>
+
+                                    {!isWeeklyDrill ? (
+                                        <div className="relative">
+                                            <input
+                                                type="date"
+                                                className="w-full p-4 pl-12 bg-secondary/30 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium appearance-none min-h-[56px]"
+                                                value={selectedDate}
+                                                min={new Date().toISOString().split('T')[0]}
+                                                onChange={(e) => setSelectedDate(e.target.value)}
+                                            />
+                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            <p className="text-sm font-medium text-muted-foreground">I want a study plan for:</p>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {WEEKLY_DRILLS.map(weeks => (
+                                                    <button
+                                                        key={weeks}
+                                                        onClick={() => setSelectedDate(addWeeks(new Date(), weeks).toISOString().split('T')[0])}
+                                                        className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${selectedDate === addWeeks(new Date(), weeks).toISOString().split('T')[0]
+                                                            ? 'bg-primary/10 border-primary text-primary'
+                                                            : 'bg-card hover:border-primary/50 border-border'
+                                                            }`}
+                                                    >
+                                                        <Clock className="w-5 h-5 mb-1 opacity-80" />
+                                                        <span className="font-bold text-lg">{weeks}</span>
+                                                        <span className="text-xs opacity-70">Weeks</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => setStep('confirmation')}
+                                    disabled={!selectedDate}
+                                    className="w-full py-4 bg-foreground text-background font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Review Goal <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- EXISTING ROADMAP VIEW (With modifications) ---
+
+    if (!goal) return null; // Should be handled by steps above
 
     const daysRemaining = differenceInDays(new Date(goal.examDate), new Date());
 
@@ -165,7 +597,7 @@ export default function MyGoalPage() {
 
             <main className="flex-1 relative overflow-x-hidden">
                 {/* Left Side - MATERIAL 3 DASHBOARD - FIXED */}
-                <div className="fixed top-16 left-0 w-1/2 bottom-0 hidden md:flex flex-col bg-background z-10 border-r border-border/50 p-6 overflow-hidden">
+                <div className="fixed top-16 left-0 w-full md:w-1/2 bottom-0 hidden md:flex flex-col bg-background z-10 border-r border-border/50 p-6 overflow-hidden">
                     {/* Background Pattern */}
                     <div className="absolute inset-0 bg-secondary/5 pointer-events-none" />
 
@@ -218,10 +650,36 @@ export default function MyGoalPage() {
                         </div>
 
                         {/* 4. ACTION BUTTON */}
-                        <button className="w-full py-5 bg-foreground text-background font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99]">
-                            <Sparkles className="w-5 h-5 text-primary" />
-                            <span>{t('start_daily_task')}</span>
-                        </button>
+                        {generatedTaskId ? (
+                            <div className="flex flex-col gap-3 w-full">
+                                <Link
+                                    href={`/question-banks/daily_task/attempt/${generatedTaskId}`}
+                                    className="w-full py-5 bg-primary text-primary-foreground font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] animate-in fade-in slide-in-from-bottom-2"
+                                >
+                                    <PlayCircle className="w-5 h-5 fill-current" />
+                                    <span>Start Today's Test</span>
+                                </Link>
+                                <button
+                                    onClick={() => setGeneratedTaskId(null)}
+                                    className="w-full py-3 text-muted-foreground font-medium hover:text-foreground transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleGenerateDailyTask}
+                                disabled={generatingTask}
+                                className="w-full py-5 bg-foreground text-background font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {generatingTask ? (
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                ) : (
+                                    <Sparkles className="w-5 h-5 text-primary" />
+                                )}
+                                <span>{generatingTask ? t('generating_task') : t('create_daily_task')}</span>
+                            </button>
+                        )}
 
                     </div>
                 </div>

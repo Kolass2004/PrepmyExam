@@ -33,6 +33,34 @@ export default function ExamReviewPage() {
             try {
                 const res = await fetch(`/api/attempt/${attemptId}`);
                 const json = await res.json();
+
+                // Normalize questions to match ExamContainer logic
+                if (json.exam && json.exam.questions) {
+                    json.exam.questions = json.exam.questions.map((q: any) => {
+                        let options = q.options || {};
+                        let answer = String(q.correct_answer || q.correctAnswer || q.answer || "");
+
+                        if (Array.isArray(options)) {
+                            const newOptions: Record<string, string> = {};
+                            options.forEach((opt: string, idx: number) => {
+                                const key = String.fromCharCode(97 + idx);
+                                newOptions[key] = opt;
+                                if (answer === String(idx) || answer.toLowerCase() === opt.toLowerCase()) {
+                                    answer = key;
+                                }
+                            });
+                            options = newOptions;
+                        } else {
+                            Object.entries(options).forEach(([key, value]) => {
+                                if (String(value).toLowerCase() === answer.toLowerCase()) {
+                                    answer = key;
+                                }
+                            });
+                        }
+                        return { ...q, options, correct_answer: answer, correctAnswer: answer };
+                    });
+                }
+
                 setData(json);
             } catch (e) {
                 console.error(e);
@@ -61,9 +89,13 @@ export default function ExamReviewPage() {
 
     const { attempt, exam } = data;
 
+    const backLink = exam.type === 'daily_task'
+        ? `/exam-dashboard/${exam.id}?type=daily_task`
+        : `/exam-dashboard/${exam.id}`;
+
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
-            <Link href={`/exam-dashboard/${exam.id}`} className="inline-flex items-center gap-2 text-muted-foreground text-primary mb-8 transition-colors px-4 py-2 bg-secondary rounded-full">
+            <Link href={backLink} className="inline-flex items-center gap-2 text-muted-foreground text-primary mb-8 transition-colors px-4 py-2 bg-secondary rounded-full">
                 <ArrowLeft className="w-4 h-4" /> {t('back_dashboard')}
             </Link>
 
@@ -86,7 +118,10 @@ export default function ExamReviewPage() {
                                     {isCorrect ? <CheckCircle2 className="text-green-600 dark:text-green-400 w-6 h-6" /> : <XCircle className="text-red-600 dark:text-red-400 w-6 h-6" />}
                                 </div>
                                 <div className="prose prose-lg dark:prose-invert max-w-none text-foreground">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{q.question || q.content}</ReactMarkdown>
+                                    {/* Fallback for question text if Markdown fails or just simple text */}
+                                    <p className="font-medium text-xl leading-relaxed">
+                                        {q.question || q.content || q.text || "Question content missing"}
+                                    </p>
                                 </div>
                             </div>
 

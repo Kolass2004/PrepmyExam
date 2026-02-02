@@ -18,14 +18,36 @@ interface ExamContainerProps {
     examId: string;
     questions?: any[]; // Allow custom questions
     examTitle?: string; // Allow custom title
+    examType?: 'standard' | 'daily_task';
 }
 
-export function ExamContainer({ examId, questions: customQuestions, examTitle }: ExamContainerProps) {
+export function ExamContainer({ examId, questions: customQuestions, examTitle, examType = 'standard' }: ExamContainerProps) {
     const { user } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
 
-    const [exam, setExam] = useState<any>(customQuestions ? { title: examTitle, questions: customQuestions } : null);
+    const [exam, setExam] = useState<any>(customQuestions ? {
+        title: examTitle,
+        questions: customQuestions.map((q: any) => {
+            // Normalize custom questions logic (duplicated safe version)
+            let options = q.options || {};
+            let answer = String(q.correct_answer || q.correctAnswer || q.answer || "");
+            if (Array.isArray(options)) {
+                const newOptions: Record<string, string> = {};
+                options.forEach((opt: string, idx: number) => {
+                    const key = String.fromCharCode(97 + idx);
+                    newOptions[key] = opt;
+                    if (answer === String(idx) || answer.toLowerCase() === opt.toLowerCase()) answer = key;
+                });
+                options = newOptions;
+            } else {
+                Object.entries(options).forEach(([key, value]) => {
+                    if (String(value).toLowerCase() === answer.toLowerCase()) answer = key;
+                });
+            }
+            return { ...q, options, correct_answer: answer, correctAnswer: answer };
+        })
+    } : null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, string>>({}); // index -> optionKey
     const [loading, setLoading] = useState(!customQuestions);
@@ -55,6 +77,42 @@ export function ExamContainer({ examId, questions: customQuestions, examTitle }:
                     throw new Error("Exam not found");
                 }
                 const examData = examSnap.data();
+
+                // Normalize questions
+                if (examData.questions) {
+                    examData.questions = examData.questions.map((q: any) => {
+                        let options = q.options || {};
+                        let answer = String(q.correct_answer || q.correctAnswer || q.answer || "");
+
+                        // Handle Array Options
+                        if (Array.isArray(options)) {
+                            const newOptions: Record<string, string> = {};
+                            options.forEach((opt: string, idx: number) => {
+                                const key = String.fromCharCode(97 + idx); // a, b, c...
+                                newOptions[key] = opt;
+                                if (answer === String(idx) || answer.toLowerCase() === opt.toLowerCase()) {
+                                    answer = key;
+                                }
+                            });
+                            options = newOptions;
+                        } else {
+                            // Handle Object Options: Check if answer matches a value
+                            Object.entries(options).forEach(([key, value]) => {
+                                if (String(value).toLowerCase() === answer.toLowerCase()) {
+                                    answer = key;
+                                }
+                            });
+                        }
+
+                        return {
+                            ...q,
+                            options,
+                            correct_answer: answer,
+                            correctAnswer: answer // Standardize
+                        };
+                    });
+                }
+
                 setExam(examData);
 
                 // 2. Fetch Progress Direct from Firestore (Client-Side)
@@ -109,7 +167,7 @@ export function ExamContainer({ examId, questions: customQuestions, examTitle }:
             if (currentQuestionIndex < exam.questions.length - 1) {
                 setCurrentQuestionIndex(prev => prev + 1);
             }
-        }, 2000);
+        }, 800);
     };
 
     const handleNext = () => {
@@ -149,14 +207,18 @@ export function ExamContainer({ examId, questions: customQuestions, examTitle }:
         });
     };
 
+    const dashboardLink = examType === 'daily_task'
+        ? `/exam-dashboard/${examId}?type=daily_task`
+        : `/exam-dashboard/${examId}`;
+
     const handlePause = async () => {
         setSubmitting(true); // show generic loading
         await saveProgress();
-        router.push(`/exam-dashboard/${examId}`);
+        router.push(dashboardLink);
     };
 
     const handleExit = () => {
-        router.push(`/exam-dashboard/${examId}`);
+        router.push(dashboardLink);
     };
 
     const handleSubmitClick = () => {
@@ -209,7 +271,7 @@ export function ExamContainer({ examId, questions: customQuestions, examTitle }:
             }
         }
 
-        router.push(`/exam-dashboard/${examId}`);
+        router.push(dashboardLink);
     };
 
     if (submitting) {
@@ -260,43 +322,20 @@ export function ExamContainer({ examId, questions: customQuestions, examTitle }:
             {/* Main Content Wrapper for Sidebar Shift */}
             <div className={`flex flex-col flex-1 min-h-0 transition-transform duration-500 ease-in-out ${isAISidebarOpen ? "md:mr-[450px]" : ""}`}>
                 <main className="flex-1 flex flex-col justify-center p-6 md:p-12 overflow-y-auto w-full max-w-5xl mx-auto">
-                    {currentQuestion && (() => {
-                        // Normalize Question Data on the fly
-                        const rawContent = currentQuestion.question || currentQuestion.content || currentQuestion.text || "";
-                        let rawOptions = currentQuestion.options || {};
-                        let rawAnswer = String(currentQuestion.correct_answer || currentQuestion.correctAnswer || currentQuestion.answer || "");
-
-                        // Handle Array Options (Convert to a,b,c...)
-                        if (Array.isArray(rawOptions)) {
-                            const newOptions: Record<string, string> = {};
-                            rawOptions.forEach((opt: string, idx: number) => {
-                                const key = String.fromCharCode(97 + idx); // a, b, c...
-                                newOptions[key] = opt;
-
-                                // Map answer if it matches value or index
-                                if (rawAnswer === String(idx) || rawAnswer.toLowerCase() === opt.toLowerCase()) {
-                                    rawAnswer = key;
-                                }
-                            });
-                            rawOptions = newOptions;
-                        }
-
-                        // Ensure we have something effectively standard
-                        return (
-                            <QuestionCard
-                                question={{
-                                    id: currentQuestionIndex,
-                                    content: rawContent,
-                                    options: rawOptions,
-                                    correctAnswer: rawAnswer
-                                }}
-                                selectedOption={answers[currentQuestionIndex] || null}
-                                onOptionSelect={handleOptionSelect}
-                                showResult={showingFeedback || !!answers[currentQuestionIndex]}
-                                isSubmitting={showingFeedback}
-                            />
-                        );
-                    })()}
+                    {currentQuestion && (
+                        <QuestionCard
+                            question={{
+                                id: currentQuestionIndex,
+                                content: currentQuestion.question || currentQuestion.content || currentQuestion.text || "",
+                                options: currentQuestion.options,
+                                correctAnswer: currentQuestion.correctAnswer // Normalized in state
+                            }}
+                            selectedOption={answers[currentQuestionIndex] || null}
+                            onOptionSelect={handleOptionSelect}
+                            showResult={showingFeedback || !!answers[currentQuestionIndex]}
+                            isSubmitting={showingFeedback}
+                        />
+                    )}
                 </main>
 
                 {/* Footer Navigation */}
