@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Calendar, Clock, ToggleLeft, ToggleRight, X } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Calendar, Clock, ToggleLeft, ToggleRight, X, CalendarCheck } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { format } from "date-fns";
@@ -57,6 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Dashboard", href: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
         { name: "Users", href: "/admin/users", icon: <Users className="w-5 h-5" /> },
         { name: "Question Banks", href: "/admin/question-banks", icon: <LayoutDashboard className="w-5 h-5" /> },
+        { name: "Daily Tasks", href: "/admin/daily-tasks", icon: <CalendarCheck className="w-5 h-5" /> },
         { name: "Settings", href: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
     ];
 

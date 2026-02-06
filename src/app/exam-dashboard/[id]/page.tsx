@@ -22,6 +22,7 @@ interface ExamDetails {
     id: string;
     title: string;
     questionCount: number;
+    createdAt?: string;
 }
 
 export default function ExamDashboardPage() {
@@ -52,9 +53,12 @@ export default function ExamDashboardPage() {
             try {
                 let examData;
                 if (type === 'daily_task') {
-                    // Fetch Daily Task Details
-                    const res = await fetch(`/api/user/daily-task/${id}?uid=${user?.uid}`);
-                    examData = await res.json();
+                    // Fetch Daily Task Details (Get latest from list)
+                    const res = await fetch(`/api/user/daily-task?uid=${user?.uid}`);
+                    const data = await res.json();
+                    if (data.tasks && data.tasks.length > 0) {
+                        examData = data.tasks[0];
+                    }
                 } else {
                     // Fetch Standard Exam Details
                     const examRes = await fetch(`/api/exam/${id}`);
@@ -63,10 +67,6 @@ export default function ExamDashboardPage() {
                 setExam(examData);
 
                 // Fetch Attempts 
-                // Note: We might need a specific endpoint for daily task attempts if the standard one doesn't work.
-                // Assuming standard one works if we just pass ID, but standard one might look in 'exam_attempts' collection linking to 'exams'.
-                // If daily task attempts are stored differently, this will need adjustment.
-                // For now, let's try standard fetch, but likely need to fix backend if 404.
                 const attemptsRes = await fetch(`/api/exam/${id}/attempts?uid=${user?.uid}`);
                 const attemptsData = await attemptsRes.json();
                 setAttempts(attemptsData.attempts || []);
@@ -155,7 +155,12 @@ export default function ExamDashboardPage() {
     };
 
     const bestScore = attempts.reduce((max, attempt) => Math.max(max, attempt.score), 0);
-    const attemptLink = type === 'daily_task' ? `/question-banks/daily_task/attempt/${id}` : `/exam/${id}`;
+    const attemptLink = type === 'daily_task' && exam?.id ? `/question-banks/daily_task/attempt/${exam.id}` : `/exam/${id}`;
+
+    // Helper for daily task check
+    const isDailyTask = type === 'daily_task';
+    const currentHour = new Date().getHours();
+    const isDailyWindowClosed = isDailyTask && (currentHour >= 20 || currentHour < 9);
 
     return (
         <div className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-500">
@@ -197,9 +202,9 @@ export default function ExamDashboardPage() {
                         </p>
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
-                        {type === 'daily_task' && exam && (Date.now() > new Date((exam as any).createdAt).getTime() + 24 * 60 * 60 * 1000) ? (
+                        {isDailyTask && (isDailyWindowClosed || (exam?.createdAt && Date.now() > new Date(exam.createdAt).getTime() + 24 * 60 * 60 * 1000)) ? (
                             <button disabled className="w-full md:w-auto px-8 py-3 bg-secondary text-muted-foreground rounded-full font-medium shadow-none cursor-not-allowed flex items-center justify-center gap-2">
-                                <X className="w-5 h-5" /> Task Expired
+                                <X className="w-5 h-5" /> {currentHour < 9 ? "Starts at 9 AM" : "Task Ended"}
                             </button>
                         ) : hasProgress ? (
                             <>

@@ -2,106 +2,84 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithGemini } from "@/lib/gemini";
 import { adminDb } from "@/lib/firebase/admin";
-import { v4 as uuidv4 } from 'uuid';
+import { UserGoal } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
     try {
-        const { uid, examName, weekTitle, topics } = await request.json();
+        const body = await request.json();
+        const { uid } = body;
 
-        if (!uid || !examName || !topics || topics.length === 0) {
-            return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+        if (!uid) {
+            return NextResponse.json({ error: "Missing uid" }, { status: 400 });
         }
 
-        console.log(`API: Generating Daily Task for ${uid} - ${examName} - ${weekTitle}`);
+        console.log(`API: Generatin Daily Task for ${uid}`);
 
-        const prompt = `
+        // 1. Get User Goal & Roadmap (Merged Logic)
+        const userDoc = await adminDb.collection("users").doc(uid).get();
+        const userData = userDoc.data();
+        const goal = userData?.goal as UserGoal | undefined;
+
+        if (!goal || !goal.roadmap) {
+            return NextResponse.json({ error: "No active goal found. Create a roadmap first." }, { status: 400 });
+        }
+
+        // 2. Find Current Week
+        const currentWeek = goal.roadmap.find(w => w.status === 'pending') || goal.roadmap[0];
+        const topics = currentWeek.topics.slice(0, 5).join(", "); // Limit topics context
+        const examName = goal.exam;
+        const weekTitle = currentWeek.title;
+
+        // 3. Generate 20 Questions (Merged Logic with JSON Mode)
+        const questions = await generateWithGemini(async (model) => {
+            const prompt = `
             Act as an expert exam setter for "${examName}".
-            Create a "Daily Practice Set" for the week: "${weekTitle}".
-            Generate exactly 15 Multiple Choice Questions based on: ${topics.join(", ")}.
+            Create a "Daily Task" set of 20 multiple-choice questions based on these topics: ${topics}.
 
-            Strictly follow this JSON format:
+            Return a JSON array of objects with this schema:
             [
                 {
-                    "title": "Daily Task: ${weekTitle}",
-                    "questions": [
-                        {
-                            "id": 1,
-                            "question": "Question text here",
-                            "options": {
-                                "a": "Option A",
-                                "b": "Option B",
-                                "c": "Option C",
-                                "d": "Option D"
-                            },
-                            "correct_answer": "a"
-                        }
-                    ]
+                    "id": "q1",
+                    "question": "Question text here?",
+                    "options": ["Option A", "Option B", "Option C", "Option D"],
+                    "correctAnswer": "Option A",
+                    "explanation": "Brief explanation of why A is correct."
                 }
             ]
-            
-            IMPORTANT: 
-            - Return the JSON as a SINGLE LINE string.
-            - Do NOT include any raw newlines or line breaks.
-            - Escape any necessary newlines within strings as \\n.
-            - ONLY return the valid JSON string.
-        `;
+            - Ensure questions are relevant and challenging.
+            - Title the set "Daily Task: Week ${currentWeek.week}".
+            `;
 
-        const generatedTaskArray = await generateWithGemini(async (model) => {
-            const result = await model.generateContent(prompt);
+            const result = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            });
             const response = await result.response;
             const text = response.text();
 
-            const cleanupMarkdown = (text: string) => {
-                // 1. Remove markdown
-                let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                // 2. Aggressively remove all raw newlines to prevent JSON.parse errors
-                // This converts structural newlines to spaces (fine for JSON)
-                clean = clean.replace(/[\r\n]+/g, " ");
-                return clean;
-            };
-
-            const cleanedText = cleanupMarkdown(text);
-            return JSON.parse(cleanedText);
+            // Cleanup markdown if present
+            const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            return JSON.parse(cleaned);
         });
 
-        // Handle array response (since prompt requests array of sets)
-        const generatedTask = Array.isArray(generatedTaskArray) ? generatedTaskArray[0] : generatedTaskArray;
-
-        if (!generatedTask || !generatedTask.questions) {
-            throw new Error("Failed to generate valid questions");
-        }
-
-        // Add metadata
-        const taskId = uuidv4();
-        const now = new Date();
-        const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
-
-        const dailyTask = {
-            id: taskId,
-            type: 'daily_task',
-            title: generatedTask.title,
-            targetExamId: 'daily_task', // Placeholder or unnecessary for this type
-            questions: generatedTask.questions,
-            createdAt: now.toISOString(),
-            expiresAt: expiresAt.toISOString(),
-            status: 'active', // 'active' | 'expired'
-            questionCount: generatedTask.questions.length,
-            examName: examName,
+        // 4. Save to Firestore
+        const taskData = {
+            title: `Daily Task: Week ${currentWeek.week}`, // Renamed from Daily Drill
             weekTitle: weekTitle,
-            progress: {
-                answeredCount: 0, // Initial progress
-                timestamp: now.toISOString()
-            }
+            weekNumber: currentWeek.week,
+            questions: questions,
+            questionCount: questions.length,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24h expiry
+            type: 'daily_task', // Changed to match standard
+            status: 'active'
         };
 
-        // Save to subcollection 'daily_tasks' for the user or 'exams' if using a unified list?
-        // Dashboard fetches from `api/user/exams` (which is unified?), let's verify dashboard fetching.
-        // Dashboard puts 'sets' in one tab, 'recents' in another, 'tasks' in another.
-        // We can just store this in a 'daily_tasks' subcollection for clean separation.
+        const docRef = await adminDb.collection("users").doc(uid).collection("daily_tasks").add(taskData);
 
-        await adminDb.collection("users").doc(uid).collection("daily_tasks").doc(taskId).set(dailyTask);
-
-        return NextResponse.json({ success: true, taskId });
+        return NextResponse.json({ success: true, taskId: docRef.id });
 
     } catch (error: any) {
         console.error("Error generating daily task:", error);

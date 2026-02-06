@@ -20,6 +20,16 @@ export interface UserGoal {
     createdAt: string;
     roadmap?: RoadmapWeek[];
     status?: 'generating' | 'completed' | 'error';
+    dailyTaskProfile?: DailyTaskProfile;
+}
+
+export interface DailyTaskProfile {
+    status: 'active' | 'deprecated';
+    consecutiveMissed: number;
+    appealsUsed: number; // Max 2
+    lastGeneratedAt: string | null; // ISO Date
+    lastAttemptedAt: string | null; // ISO Date
+    timezone?: string; // Optional: default to system or user pref
 }
 
 export interface QuestionSet {
