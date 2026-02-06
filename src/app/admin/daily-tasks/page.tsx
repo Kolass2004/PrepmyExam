@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
     Loader2, Users, AlertTriangle, CheckCircle2, RefreshCcw,
     RotateCcw, Zap, Search, ChevronLeft, ChevronRight,
-    Activity, XCircle, Clock, Sparkles
+    Activity, XCircle, Clock, Sparkles, Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,7 @@ export default function AdminDailyTasksPage() {
 
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [generatingAll, setGeneratingAll] = useState(false);
+    const [cleanupLoading, setCleanupLoading] = useState(false);
 
     // Debounce search
     useEffect(() => {
@@ -167,6 +168,29 @@ export default function AdminDailyTasksPage() {
         }
     };
 
+    const handleCleanup = async () => {
+        if (!confirm("This will permanently delete 'unknown' users (zombie records) from the database. proceed?")) return;
+
+        setCleanupLoading(true);
+        try {
+            const token = await user?.getIdToken();
+            const res = await fetch(`/api/admin/daily-tasks/cleanup`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error);
+
+            toast.success(data.message);
+            fetchData(1);
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setCleanupLoading(false);
+        }
+    };
+
     const formatDate = (date: string | null) => {
         if (!date) return "Never";
         return new Date(date).toLocaleString('en-IN', {
@@ -182,14 +206,24 @@ export default function AdminDailyTasksPage() {
                     <h1 className="text-4xl font-black tracking-tight">Daily Task Management</h1>
                     <p className="text-muted-foreground mt-1">Monitor and manage user daily task profiles</p>
                 </div>
-                <button
-                    onClick={handleGenerateAll}
-                    disabled={generatingAll}
-                    className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-2xl flex items-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
-                >
-                    {generatingAll ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-                    {generatingAll ? "Generating..." : "Generate All Tasks"}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleCleanup}
+                        disabled={cleanupLoading}
+                        className="px-6 py-3 bg-red-500/10 text-red-600 font-bold rounded-2xl flex items-center gap-2 hover:bg-red-500/20 transition-all disabled:opacity-50 shadow-lg"
+                    >
+                        {cleanupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                        {cleanupLoading ? "Cleaning up..." : "Cleanup Invalid Users"}
+                    </button>
+                    <button
+                        onClick={handleGenerateAll}
+                        disabled={generatingAll}
+                        className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-2xl flex items-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
+                    >
+                        {generatingAll ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                        {generatingAll ? "Generating..." : "Generate All Tasks"}
+                    </button>
+                </div>
             </div>
 
             {/* Stats Cards */}

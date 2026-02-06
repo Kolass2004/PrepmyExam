@@ -8,10 +8,15 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/daily-tasks/[uid]/tasks - Get all tasks for a user
 export async function GET(
     request: NextRequest,
-    { params }: { params: { uid: string } }
+    props: { params: Promise<{ uid: string }> }
 ) {
     try {
+        const params = await props.params;
         const { uid } = params;
+
+        if (!uid || typeof uid !== 'string') {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
 
         const tasksSnapshot = await adminDb
             .collection("users")
@@ -51,10 +56,15 @@ export async function GET(
 // POST /api/admin/daily-tasks/[uid]/tasks - Manually generate task for user (Admin Override)
 export async function POST(
     request: NextRequest,
-    { params }: { params: { uid: string } }
+    props: { params: Promise<{ uid: string }> }
 ) {
     try {
+        const params = await props.params;
         const { uid } = params;
+
+        if (!uid || typeof uid !== 'string') {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
 
         // Get user's goal
         const userDoc = await adminDb.collection("users").doc(uid).get();

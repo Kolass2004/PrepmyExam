@@ -7,15 +7,25 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/daily-tasks/[uid] - Get specific user's daily task details
 export async function GET(
     request: NextRequest,
-    { params }: { params: { uid: string } }
+    props: { params: Promise<{ uid: string }> }
 ) {
     try {
+        const params = await props.params;
         const { uid } = params;
 
-        const userDoc = await adminDb.collection("users").doc(uid).get();
+        if (!uid || typeof uid !== 'string') {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
+
+        const userDocPromise = adminDb.collection("users").doc(uid).get();
+        // Dynamic import to avoid circular dep issues if any, or just consistent style
+        const { adminAuth } = await import("@/lib/firebase/admin");
+        const userAuthPromise = adminAuth.getUser(uid).catch(() => null);
+
+        const [userDoc, userAuth] = await Promise.all([userDocPromise, userAuthPromise]);
 
         if (!userDoc.exists) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            return NextResponse.json({ error: "User not found in database" }, { status: 404 });
         }
 
         const userData = userDoc.data();
@@ -53,8 +63,8 @@ export async function GET(
         return NextResponse.json({
             user: {
                 uid: userDoc.id,
-                email: userData?.email || "N/A",
-                displayName: userData?.displayName || userData?.email?.split("@")[0] || "Unknown",
+                email: userAuth?.email || userData?.email || "N/A",
+                displayName: userAuth?.displayName || userData?.displayName || userAuth?.email?.split("@")[0] || "Unknown",
             },
             goal: {
                 exam: goal.exam,
@@ -74,10 +84,16 @@ export async function GET(
 // PATCH /api/admin/daily-tasks/[uid] - Admin actions on user profile
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { uid: string } }
+    props: { params: Promise<{ uid: string }> }
 ) {
     try {
+        const params = await props.params;
         const { uid } = params;
+
+        if (!uid || typeof uid !== 'string') {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
+
         const body = await request.json();
         const { action } = body;
 
@@ -164,10 +180,15 @@ export async function PATCH(
 // DELETE /api/admin/daily-tasks/[uid] - Delete all daily tasks for user
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { uid: string } }
+    props: { params: Promise<{ uid: string }> }
 ) {
     try {
+        const params = await props.params;
         const { uid } = params;
+
+        if (!uid || typeof uid !== 'string') {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
 
         // Get all daily tasks
         const tasksSnapshot = await adminDb
