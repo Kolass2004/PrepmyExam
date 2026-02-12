@@ -123,7 +123,7 @@ export function GoalOverview({ goal, onSetGoal, onViewTasks, onRefresh, classNam
                             </div>
 
                             <button
-                                onClick={onSetGoal}
+                                onClick={() => { window.location.href = "/mygoal"; }}
                                 className="w-full sm:w-auto px-8 py-4 bg-foreground text-background font-bold text-lg rounded-full hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:-translate-y-1 active:scale-95"
                             >
                                 <span className="tracking-wide">Create Roadmap</span>
