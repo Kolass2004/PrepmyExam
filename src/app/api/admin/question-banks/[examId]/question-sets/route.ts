@@ -11,6 +11,8 @@ async function verifyAdmin(req: NextRequest) {
     } catch { return null; }
 }
 
+// He has made everything beautiful in its time. Ecclesiastes 3:11
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ examId: string }> }) {
     const admin = await verifyAdmin(req);
     if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

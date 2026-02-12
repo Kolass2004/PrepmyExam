@@ -39,55 +39,48 @@
 }
 
 :root {
-  /* Material 3 Expressive - Light */
+  /* Material 3 Expressive - Light (Refined) */
   --base-hue: 270;
   --base-sat: 83%;
 
-  /* Neutral Palette (Tinted with base hue) */
+  /* Neutral Palette (Reduced tint for clean look) */
   --neutral-hue: var(--base-hue);
-  --neutral-sat: 10%;
 
-  --background: hsl(var(--neutral-hue) 25% 100%);
-  /* Surface */
+  /* Tinted background (Selected Color Tint) */
+  --background: hsl(var(--base-hue) 55% 90%);
+
   --foreground: hsl(var(--neutral-hue) 10% 10%);
-  /* On Surface */
 
-  --card: hsl(var(--neutral-hue) 20% 96%);
-  /* Surface Container Low */
+  /* Pure white cards for pop */
+  --card: hsl(0 0% 100%);
   --card-foreground: hsl(var(--neutral-hue) 10% 10%);
 
-  --surface-container: hsl(var(--neutral-hue) 20% 94%);
-  /* Surface Container */
+  --surface-container: hsl(var(--neutral-hue) 10% 96%);
 
-  --popover: hsl(var(--neutral-hue) 20% 96%);
+  --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(var(--neutral-hue) 10% 10%);
 
   --primary: hsl(var(--base-hue) var(--base-sat) 58%);
-  /* Primary */
   --primary-foreground: hsl(0 0% 100%);
-  /* On Primary */
 
-  --secondary: hsl(var(--base-hue) 15% 90%);
-  /* Secondary Container */
+  /* Cleaner secondary items */
+  --secondary: hsl(var(--neutral-hue) 10% 95%);
   --secondary-foreground: hsl(var(--base-hue) 10% 10%);
-  /* On Secondary Container */
 
-  --muted: hsl(var(--neutral-hue) 10% 92%);
-  --muted-foreground: hsl(var(--neutral-hue) 5% 40%);
+  --muted: hsl(var(--neutral-hue) 5% 94%);
+  --muted-foreground: hsl(var(--neutral-hue) 5% 45%);
 
-  --accent: hsl(var(--base-hue) 20% 90%);
-  /* Tertiary Container / Highlight */
+  --accent: hsl(var(--base-hue) 10% 94%);
   --accent-foreground: hsl(var(--base-hue) var(--base-sat) 40%);
 
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 98%);
 
-  --border: hsl(var(--neutral-hue) 10% 85%);
-  --input: hsl(var(--neutral-hue) 10% 85%);
+  --border: hsl(var(--neutral-hue) 10% 92%);
+  --input: hsl(var(--neutral-hue) 10% 90%);
   --ring: hsl(var(--base-hue) var(--base-sat) 58%);
 
   --radius: 1.75rem;
-  /* 28px - M3 Expressive Large */
 }
 
 .dark {
@@ -97,7 +90,7 @@
   --neutral-sat: 10%;
 
   /* M3 Dark Theme - High Contrast */
-  --background: hsl(var(--neutral-hue) 10% 12%);
+  --background: hsl(var(--neutral-hue) 20% 12%);
   /* Surface - Almost Black */
   --foreground: hsl(var(--neutral-hue) 5% 98%);
   /* On Surface */

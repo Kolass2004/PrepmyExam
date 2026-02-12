@@ -236,74 +236,8 @@ export default function MyGoalPage() {
         }
     };
 
-    const [generatingTask, setGeneratingTask] = useState(false);
-    const [generatedTaskId, setGeneratedTaskId] = useState<string | null>(null);
+    // Daily task generation is now automated via Cron. Manual button removed.
 
-    // We need router to redirect to dashboard after generation
-    // Ensure useRouter is imported from 'next/navigation' at the top if not already (it's not, I'll check imports)
-
-    const handleGenerateDailyTask = async () => {
-        if (!user || !goal || !goal.roadmap) return;
-
-        setGeneratingTask(true);
-        try {
-            // 1. Determine Current Week
-            // Simple logic: Difference in weeks from start date. 
-            // If strictly based on syllabus, we might pick the "next pending" week. 
-            // For now, let's pick the first week if just starting, or calculated week.
-            const startDate = new Date(goal.createdAt);
-            const now = new Date();
-            // detailed diff in weeks
-            const diffTime = Math.abs(now.getTime() - startDate.getTime());
-            const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-
-            // Current week index (1-based)
-            let currentWeekIndex = diffWeeks || 1;
-            if (currentWeekIndex > goal.roadmap.length) currentWeekIndex = goal.roadmap.length;
-
-            const weekData = goal.roadmap.find(w => w.week === currentWeekIndex) || goal.roadmap[0];
-
-            if (!weekData) {
-                console.error("No week data found", { currentWeekIndex, roadmapLength: goal.roadmap.length });
-                return;
-            }
-
-            console.log("Frontend: Generating Daily Task for:", {
-                uid: user.uid,
-                exam: goal.exam,
-                week: weekData.title,
-                topics: weekData.topics
-            });
-
-            // 2. Call API
-            const res = await fetch('/api/user/daily-task/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    examName: goal.exam,
-                    weekTitle: weekData.title,
-                    topics: weekData.topics
-                })
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                // Remove redirect, show success state locally
-                setGeneratedTaskId(data.taskId);
-            } else {
-                console.error("Failed to generate task:", data.error);
-                alert("Failed to create daily task. Please try again.");
-            }
-
-        } catch (error) {
-            console.error("Error generating daily task:", error);
-            alert("An error occurred.");
-        } finally {
-            setGeneratingTask(false);
-        }
-    };
 
     if (authLoading || loading) {
         return (
@@ -709,37 +643,12 @@ export default function MyGoalPage() {
                             <CalendarSync goal={goal} onWeekSelect={handleWeekSelect} className="w-full h-full" />
                         </div>
 
-                        {/* 4. ACTION BUTTON */}
-                        {generatedTaskId ? (
-                            <div className="flex flex-col gap-3 w-full">
-                                <Link
-                                    href="/?tab=tasks"
-                                    className="w-full py-5 bg-primary text-primary-foreground font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] animate-in fade-in slide-in-from-bottom-2"
-                                >
-                                    <Sparkles className="w-5 h-5 fill-current" />
-                                    <span>{t('view_daily_task')}</span>
-                                </Link>
-                                <button
-                                    onClick={() => setGeneratedTaskId(null)}
-                                    className="w-full py-3 text-muted-foreground font-medium hover:text-foreground transition-colors"
-                                >
-                                    Cancel
-                                </button>
+                        {/* 4. ACTION BUTTON - REMOVED (Automated) */}
+                        <div className="flex flex-col gap-3 w-full">
+                            <div className="p-4 bg-secondary/30 rounded-[20px] border border-border/50 text-center">
+                                <p className="text-sm text-muted-foreground font-medium">Daily tasks are now generated automatically every morning.</p>
                             </div>
-                        ) : (
-                            <button
-                                onClick={handleGenerateDailyTask}
-                                disabled={generatingTask}
-                                className="w-full py-5 bg-foreground text-background font-bold text-base uppercase tracking-wider rounded-full flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.01] shadow-lg active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                {generatingTask ? (
-                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                ) : (
-                                    <Sparkles className="w-5 h-5 text-primary" />
-                                )}
-                                <span>{generatingTask ? t('generating_task') : t('create_daily_task')}</span>
-                            </button>
-                        )}
+                        </div>
 
                     </div>
                 </div>

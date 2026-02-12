@@ -17,8 +17,6 @@ export async function GET(request: NextRequest) {
             .orderBy("createdAt", "desc")
             .get();
 
-        console.log(`API: Fetching daily tasks for ${uid}. Found: ${tasksSnapshot.size}`);
-
         const tasks = tasksSnapshot.docs.map(doc => {
             const data = doc.data();
             const now = new Date();
@@ -29,12 +27,9 @@ export async function GET(request: NextRequest) {
                 ...data,
                 id: doc.id,
                 isExpired,
-                status: isExpired ? 'expired' : 'active' // calculated status
+                status: isExpired ? 'expired' : 'active'
             };
         });
-
-        // Optional: Filter out super old expired tasks if we only want recent ones?
-        // For now, return all (maybe limit to 50?)
 
         return NextResponse.json({ tasks });
     } catch (error) {
