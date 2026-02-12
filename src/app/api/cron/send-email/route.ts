@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
         for (const doc of usersSnapshot.docs) {
             const uid = doc.id;
             const userData = doc.data();
-            const goal = userData.goal as UserGoal | undefined;
-            let email = userData.email;
+            const goal = userData?.goal as UserGoal | undefined;
+            let email = userData?.email;
 
             // Fallback: Fetch email from Auth if missing
             if (!email) {

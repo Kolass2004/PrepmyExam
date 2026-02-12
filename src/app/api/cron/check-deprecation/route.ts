@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         for (const doc of usersSnapshot.docs) {
             const uid = doc.id;
             const userData = doc.data();
-            const goal = userData.goal as UserGoal | undefined;
+            const goal = userData?.goal as UserGoal | undefined;
 
             // Skip if no goal or already deprecated
             if (!goal || !goal.dailyTaskProfile || goal.dailyTaskProfile.status === 'deprecated') {

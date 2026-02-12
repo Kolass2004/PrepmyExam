@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
             const batchPromises = batch.map(async (doc) => {
                 const uid = doc.id;
                 const userData = doc.data();
-                const goal = userData.goal as UserGoal | undefined;
+                const goal = userData?.goal as UserGoal | undefined;
 
                 // --- Validation Checks ---
                 if (!goal || goal.status !== 'completed' || !goal.roadmap) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 // Initialize Profile if missing (Lazy Init)
-                let dailyProfile = userData.goal.dailyTaskProfile as DailyTaskProfile | undefined;
+                let dailyProfile = userData?.goal?.dailyTaskProfile as DailyTaskProfile | undefined;
                 if (!dailyProfile) {
                     dailyProfile = {
                         status: 'active',
