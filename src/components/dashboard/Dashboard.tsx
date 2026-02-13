@@ -255,7 +255,7 @@ export function Dashboard({ user }: DashboardProps) {
     }, [loading]);
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-background p-6 md:p-12 transition-colors duration-300">
+        <div ref={containerRef} className="min-h-screen bg-background p-4 md:p-12 transition-colors duration-300">
             {/* Header - PRESERVED */}
             <header className="dash-item flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 relative z-50 gap-4 md:gap-0">
                 <div className="w-full md:w-auto">
@@ -488,7 +488,17 @@ export function Dashboard({ user }: DashboardProps) {
                                         ) : (
                                             dailyTasks.map(task => {
                                                 const createdAt = new Date(task.createdAt).getTime();
-                                                const expiresAt = createdAt + 24 * 60 * 60 * 1000;
+                                                // Exam closes at 8:00 PM IST (14:30 UTC)
+                                                const createdDate = new Date(task.createdAt);
+                                                const istOffset = 5.5 * 60 * 60 * 1000;
+                                                const istDate = new Date(createdDate.getTime() + istOffset);
+                                                const closingIST = new Date(Date.UTC(
+                                                    istDate.getUTCFullYear(),
+                                                    istDate.getUTCMonth(),
+                                                    istDate.getUTCDate(),
+                                                    14, 30, 0 // 20:00 IST = 14:30 UTC
+                                                ));
+                                                const expiresAt = closingIST.getTime();
                                                 const timeLeft = expiresAt - now;
                                                 const isExpired = timeLeft <= 0;
 

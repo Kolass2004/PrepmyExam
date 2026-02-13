@@ -164,9 +164,9 @@ export function GoalOverview({ goal, onSetGoal, onViewTasks, onRefresh, classNam
                 </div>
             </div>
 
-            {/* Middle: Current Week Snapshot (Desktop Only) */}
+            {/* Middle: Current Week Snapshot (Always visible, responsive layout) */}
             {currentWeek && (
-                <div className="hidden lg:flex flex-1 border-x border-primary/10 relative">
+                <div className="flex-1 w-full border-t md:border-t-0 md:border-x border-primary/10 relative">
                     <div className="h-full w-full bg-card relative overflow-hidden group/card transition-colors flex flex-col p-8">
                         {/* Decor */}
                         <div className="absolute -top-10 -right-10 w-24 h-24 bg-primary/20 rounded-full blur-2xl pointer-events-none group-hover/card:bg-primary/30 transition-colors" />

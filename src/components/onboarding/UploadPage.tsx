@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FileIcon, defaultStyles } from "react-file-icon";
-import { Upload, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { useLayoutEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -17,7 +15,7 @@ interface UploadPageProps {
 export function UploadPage({ onUploadSuccess }: UploadPageProps) {
     const { user } = useAuth();
     const { t } = useLanguage();
-    const [mode, setMode] = useState<"upload" | "input">("input");
+
     const [jsonContent, setJsonContent] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,7 +37,6 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
         const pending = localStorage.getItem("pendingExamUpload");
         if (pending) {
             setJsonContent(pending);
-            setMode("input");
             localStorage.removeItem("pendingExamUpload");
             // Optional: You could show a small toast here
         }
@@ -93,18 +90,7 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            if (event.target?.result) {
-                setJsonContent(event.target.result as string);
-            }
-        };
-        reader.readAsText(file);
-    };
 
     return (
         <div ref={containerRef} className="min-h-screen flex flex-col items-center justify-center p-6 bg-background transition-colors duration-500 relative">
@@ -125,62 +111,13 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
             </div>
 
             <div className="anim-item w-full max-w-3xl bg-card border border-border rounded-[2rem] overflow-hidden shadow-xl elevation-2">
-                <div className="flex border-b border-border">
-                    <button
-                        onClick={() => setMode("upload")}
-                        className={cn(
-                            "flex-1 py-4 text-center font-medium transition-colors",
-                            mode === "upload" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-muted"
-                        )}
-                    >
-                        {t('tab_upload_file')}
-                    </button>
-                    <button
-                        onClick={() => setMode("input")}
-                        className={cn(
-                            "flex-1 py-4 text-center font-medium transition-colors",
-                            mode === "input" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-muted"
-                        )}
-                    >
-                        {t('tab_json_input')}
-                    </button>
-                </div>
-
                 <div className="p-8">
-                    {mode === "upload" ? (
-                        <div className="border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all rounded-3xl p-10 flex flex-col items-center justify-center cursor-pointer group relative">
-                            <input
-                                type="file"
-                                accept=".json"
-                                onChange={handleFileUpload}
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                            />
-
-                            {jsonContent ? (
-                                <div className="w-16 mb-4">
-                                    <FileIcon extension="json" {...defaultStyles.json} />
-                                </div>
-                            ) : (
-                                <div className="p-4 bg-secondary rounded-full mb-4 group-hover:scale-110 transition-transform">
-                                    <Upload className="w-8 h-8 text-primary" />
-                                </div>
-                            )}
-
-                            <p className="text-lg font-medium text-foreground">
-                                {jsonContent ? "File loaded successfully!" : t('drop_file')}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                                {jsonContent ? "You can verify the content in the input tab" : t('browse_file')}
-                            </p>
-                        </div>
-                    ) : (
-                        <textarea
-                            value={jsonContent}
-                            onChange={(e) => setJsonContent(e.target.value)}
-                            placeholder='{ "questions": [...] }'
-                            className="w-full h-64 bg-secondary/50 border border-input rounded-2xl p-4 text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                    )}
+                    <textarea
+                        value={jsonContent}
+                        onChange={(e) => setJsonContent(e.target.value)}
+                        placeholder='{ "questions": [...] }'
+                        className="w-full h-64 bg-secondary/50 border border-input rounded-2xl p-4 text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
 
                     {error && (
                         <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive">
@@ -205,6 +142,24 @@ export function UploadPage({ onUploadSuccess }: UploadPageProps) {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            {/* Create Your Own Exam CTA */}
+            <div className="anim-item w-full max-w-3xl mt-6">
+                <Link href="/prompt" className="group relative block w-full p-[1px] rounded-2xl bg-gradient-to-r from-primary via-accent to-primary overflow-hidden">
+                    <div className="relative flex items-center justify-between gap-4 bg-card rounded-2xl px-8 py-5 transition-all group-hover:bg-card/80">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-foreground font-bold text-base">Create Your Own Exam</h3>
+                                <p className="text-muted-foreground text-sm">Generate custom exams with AI — just describe what you need</p>
+                            </div>
+                        </div>
+                        <div className="text-primary font-semibold text-sm group-hover:translate-x-1 transition-transform whitespace-nowrap">Try it →</div>
+                    </div>
+                </Link>
             </div>
         </div>
     );
