@@ -58,11 +58,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ e
     const { examId } = await params;
 
     try {
-        // Recursively delete subcollections or associated sets if we were strict,
-        // but for now just delete the exam document. 
-        // NOTE: In Firestore deleting a document does not delete subcollections. 
-        // If we link question sets by ID field, they will be orphaned. 
-        // Ideally we query and delete them first.
+
 
         const setsSnapshot = await adminDb.collection("question_sets").where("targetExamId", "==", examId).get();
         const batch = adminDb.batch();

@@ -31,6 +31,23 @@ export async function POST(request: NextRequest) {
         // Delete progress (cleanup)
         await adminDb.collection("users").doc(userId).collection("progress").doc(examId).delete();
 
+        // If this was a daily task, update the user's dailyTaskProfile
+        try {
+            const dailyTaskDoc = await adminDb
+                .collection("users").doc(userId)
+                .collection("daily_tasks").doc(examId).get();
+
+            if (dailyTaskDoc.exists) {
+                await adminDb.collection("users").doc(userId).update({
+                    "goal.dailyTaskProfile.lastAttemptedAt": new Date().toISOString(),
+                    "goal.dailyTaskProfile.consecutiveMissed": 0
+                });
+            }
+        } catch (dtErr) {
+            // Non-critical: don't fail the submission if profile update fails
+            console.error("Failed to update dailyTaskProfile:", dtErr);
+        }
+
         return NextResponse.json({ success: true, attemptId: attemptRef.id });
     } catch (error) {
         console.error("Submit error:", error);

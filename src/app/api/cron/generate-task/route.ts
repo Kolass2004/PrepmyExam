@@ -3,11 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { generateWithGemini } from "@/lib/gemini";
 import { UserGoal, DailyTaskProfile } from "@/lib/types";
+import { getISTDateString, toISTDateString } from "@/lib/dates";
 
 export const maxDuration = 60; // Allow longer timeout for batch generation
 
 // Use a simple secret to protect the endpoint
 const CRON_SECRET = process.env.CRON_SECRET || 'dev_secret';
+
+// Vercel Crons use GET requests
+export async function GET(request: NextRequest) {
+    return POST(request);
+}
 
 export async function POST(request: NextRequest) {
     // 1. Authorization Check
@@ -39,10 +45,7 @@ export async function POST(request: NextRequest) {
 
         const results = [];
 
-        // 3. Iterate and Process
-        // We use a for...of loop to control concurrency if needed, or Promise.all for speed.
-        // Given Gemini rate limits, we should probably do small batches or sequential.
-        // Let's do batches of 3 to respect rate limits.
+        // 3. Iterate and Process in batches of 3 to respect Gemini rate limits
         const batchSize = 3;
         const docs = usersSnapshot.docs;
 
@@ -69,19 +72,18 @@ export async function POST(request: NextRequest) {
                         lastGeneratedAt: null,
                         lastAttemptedAt: null
                     };
-                    // We'll save this back if we generate, or strictly save it now? 
-                    // Let's use it in memory for now.
                 }
 
+                // Skip deprecated users
                 if (dailyProfile.status === 'deprecated') {
                     return { uid, status: 'skipped', reason: 'User deprecated' };
                 }
 
-                // Check if already generated for today
-                const today = new Date().toISOString().split('T')[0];
-                const lastGen = dailyProfile.lastGeneratedAt ? dailyProfile.lastGeneratedAt.split('T')[0] : null;
+                // Check if already generated for today (IST)
+                const todayIST = getISTDateString();
+                const lastGenIST = dailyProfile.lastGeneratedAt ? toISTDateString(dailyProfile.lastGeneratedAt) : null;
 
-                if (lastGen === today) {
+                if (lastGenIST === todayIST) {
                     return { uid, status: 'skipped', reason: 'Already generated today' };
                 }
 
@@ -124,13 +126,17 @@ export async function POST(request: NextRequest) {
                         // Clean markdown
                         text = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
+                        // Extract JSON array if surrounded by text
+                        const firstOpen = text.indexOf('[');
+                        const lastClose = text.lastIndexOf(']');
+                        if (firstOpen !== -1 && lastClose !== -1) {
+                            text = text.substring(firstOpen, lastClose + 1);
+                        }
+
                         try {
                             return JSON.parse(text);
                         } catch (parseError) {
-                            console.error("JSON Parse 1st Attempt Failed. Cleaning...");
-                            // Try to escape unescaped newlines in strings (fragile but helps)
-                            // text = text.replace(/\n/g, "\\n"); // This breaks structure.
-                            // Simply throw for now, but logged.
+                            console.error("JSON Parse 1st Attempt Failed. Text:", text.substring(0, 100) + "...");
                             throw parseError;
                         }
                     });

@@ -276,9 +276,13 @@ function ActionStateButton({ goal }: { goal: UserGoal }) {
     const isOpen = !isTooEarly && !isTooLate;
 
     // Check if task generated today
+    // Check if task generated within last 24 hours
     const lastGen = goal.dailyTaskProfile?.lastGeneratedAt;
-    const todayStr = new Date().toISOString().split('T')[0];
-    const isGeneratedToday = lastGen && lastGen.startsWith(todayStr);
+
+    // Instead of checking string date match (which fails if task gen yesterday but still valid),
+    // we check if it was generated within last 24 hours.
+    const lastGenDate = lastGen ? new Date(lastGen) : null;
+    const isGeneratedToday = lastGenDate && (now.getTime() - lastGenDate.getTime() < 24 * 60 * 60 * 1000);
 
     const handleEnterTask = () => {
         router.push(`/exam-dashboard/${goal.exam}?type=daily_task`);

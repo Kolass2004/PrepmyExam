@@ -2,9 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { UserGoal, DailyTaskProfile } from "@/lib/types";
+import { getISTDateString, toISTDateString } from "@/lib/dates";
 
 export const maxDuration = 60;
 const CRON_SECRET = process.env.CRON_SECRET || 'dev_secret';
+
+// Vercel Crons use GET requests
+export async function GET(request: NextRequest) {
+    return POST(request);
+}
 
 export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
@@ -33,6 +39,9 @@ export async function POST(request: NextRequest) {
         const batch = adminDb.batch();
         let batchCount = 0;
 
+        // Use IST date for all comparisons
+        const todayIST = getISTDateString();
+
         for (const doc of usersSnapshot.docs) {
             const uid = doc.id;
             const userData = doc.data();
@@ -44,17 +53,14 @@ export async function POST(request: NextRequest) {
             }
 
             const profile = goal.dailyTaskProfile;
-            const today = new Date().toISOString().split('T')[0];
 
-            // Check if they generated a task for today (if not generated, maybe system error or new user, give benefit of doubt?)
-            // Or strictly: If generated AND NOT attempted -> Miss.
-            // If NOT generated -> Skip (don't punish for system failure).
-            const lastGenDate = profile.lastGeneratedAt ? profile.lastGeneratedAt.split('T')[0] : null;
-            const lastAttDate = profile.lastAttemptedAt ? profile.lastAttemptedAt.split('T')[0] : null;
+            // Convert timestamps to IST dates
+            const lastGenDateIST = profile.lastGeneratedAt ? toISTDateString(profile.lastGeneratedAt) : null;
+            const lastAttDateIST = profile.lastAttemptedAt ? toISTDateString(profile.lastAttemptedAt) : null;
 
-            if (lastGenDate === today) {
-                // Task existed for today. Did they attempt it?
-                if (lastAttDate !== today) {
+            if (lastGenDateIST === todayIST) {
+                // Task existed for today (IST). Did they attempt it?
+                if (lastAttDateIST !== todayIST) {
                     // MISS!
                     checkedCount++;
                     const newMissed = (profile.consecutiveMissed || 0) + 1;
@@ -86,14 +92,8 @@ export async function POST(request: NextRequest) {
             // Limit batch size (Firestore limit 500)
             if (batchCount >= 400) {
                 await batch.commit();
-                batchCount = 0; // Reset logic needs new batch instance really, but we'll assume efficient execution
-                // Ideally create new batch here or commit and continue.
-                // For simplicity in this route, lets commit and start fresh.
-                // Re-assign batch variable isn't possible with const. 
-                // We'll simplisticly await commit and continue adding to 'batch' object? 
-                // No, batch is committed. Need new one. 
-                // Since user base is small, one batch likely fine. If large, need chunking logic.
-                // We'll skip complex chunking for now and assume < 500 active users needing updates per run.
+                // For small user bases, one batch is sufficient.
+                // For larger user bases, would need chunking with new batch instances.
             }
         }
 

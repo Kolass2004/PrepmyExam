@@ -79,6 +79,12 @@ export async function POST(request: NextRequest) {
 
         const docRef = await adminDb.collection("users").doc(uid).collection("daily_tasks").add(taskData);
 
+        // Update dailyTaskProfile.lastGeneratedAt so crons know this user has today's task
+        await adminDb.collection("users").doc(uid).update({
+            "goal.dailyTaskProfile.lastGeneratedAt": new Date().toISOString(),
+            "goal.dailyTaskProfile.status": "active"
+        });
+
         return NextResponse.json({ success: true, taskId: docRef.id });
 
     } catch (error: any) {
