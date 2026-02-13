@@ -144,11 +144,10 @@ async function handleSendEmail(request: NextRequest, action: string) {
                 }
             }
 
-            // --- WARNING + DEPRECATION LOGIC (7:30 PM IST) ---
+            // --- WARNING LOGIC (7:30 PM IST) ---
             if (action === 'warning') {
                 // Send if generated today (IST) AND not attempted today (IST)
                 if (lastGenDateIST === todayIST && lastAttDateIST !== todayIST) {
-                    // Send warning email
                     try {
                         await sendEmail({
                             to: email,
@@ -174,19 +173,6 @@ async function handleSendEmail(request: NextRequest, action: string) {
                         errors++;
                         debugLogs.push(`Failed warning to ${email}: ${e.message}`);
                     }
-
-                    // Also run deprecation check inline
-                    const newMissed = (profile.consecutiveMissed || 0) + 1;
-                    const updates: any = {
-                        "goal.dailyTaskProfile.consecutiveMissed": newMissed
-                    };
-                    if (newMissed >= 2) {
-                        updates["goal.dailyTaskProfile.status"] = 'deprecated';
-                        debugLogs.push(`User ${uid} deprecated (Missed: ${newMissed})`);
-                    } else {
-                        debugLogs.push(`User ${uid} missed task (Streak: ${newMissed})`);
-                    }
-                    await adminDb.collection("users").doc(uid).update(updates);
                 } else {
                     if (targetUid) debugLogs.push(`Skipped Warning: Gen(IST):${lastGenDateIST}, Att(IST):${lastAttDateIST}, Today(IST):${todayIST}`);
                 }

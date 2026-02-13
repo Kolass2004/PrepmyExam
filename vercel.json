@@ -5,8 +5,16 @@
             "schedule": "30 3 * * *"
         },
         {
+            "path": "/api/cron/send-email?action=reminder",
+            "schedule": "30 6 * * *"
+        },
+        {
             "path": "/api/cron/send-email?action=warning",
             "schedule": "0 14 * * *"
+        },
+        {
+            "path": "/api/cron/check-deprecation",
+            "schedule": "30 14 * * *"
         }
     ]
 }
