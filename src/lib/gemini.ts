@@ -41,7 +41,7 @@ export async function generateWithGemini(
             const genAI = new GoogleGenerativeAI(apiKey);
 
             // Use a known valid model
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
 
             return await callback(model);
 
